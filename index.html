@@ -165,6 +165,122 @@
   button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(29,78,42,0.45); }
   button.go svg { width: 22px; height: 22px; }
 
+  /* ───── Persona ───── */
+  .persona {
+    background: linear-gradient(135deg, #f0fff4 0%, #fffbe8 100%);
+    border: 2px solid var(--ball-glow);
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  .persona-eyebrow {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--court); font-weight: 800;
+  }
+  .persona-label {
+    font-size: 1.5rem; font-weight: 900; color: var(--court-dark);
+    margin: 0.2rem 0;
+    letter-spacing: -0.01em;
+  }
+  .persona-blurb {
+    font-size: 0.85rem; color: #455a4d;
+  }
+
+  /* ───── Share row ───── */
+  .share-row {
+    display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .share-btn {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.5rem 0.95rem;
+    background: #fff;
+    color: var(--court-dark);
+    border: 1.5px solid var(--court);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .share-btn:hover { background: var(--court); color: #fff; }
+  .share-btn svg { width: 16px; height: 16px; }
+  .share-note { font-size: 0.78rem; color: var(--muted); }
+
+  /* ───── Pick card upgrades ───── */
+  .pick-head {
+    display: flex; gap: 1rem; align-items: center;
+    margin: 0.4rem 0 0.6rem;
+  }
+  .pick-img {
+    flex: 0 0 70px;
+    background: linear-gradient(180deg, #f7faf3, #eaf5e9);
+    border-radius: 12px;
+    padding: 0.4rem;
+    border: 1px solid #d4dcd6;
+  }
+  .pick-img .racket-svg { display: block; width: 100%; height: auto; max-height: 110px; }
+  .pick-meta { flex: 1; min-width: 0; }
+  .pick .price-line {
+    font-weight: 800; color: var(--court-dark); font-size: 1.05rem; margin-top: 0.15rem;
+  }
+  .pick .price-note { font-weight: 400; color: var(--muted); font-size: 0.75rem; margin-left: 0.25rem; }
+  .pick .price { display: none; } /* old price float, replaced by .price-line */
+
+  .match-score {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f5ff9e, var(--ball) 60%, #97b540);
+    color: var(--court-dark);
+    display: flex; align-items: baseline; justify-content: center;
+    font-size: 1.3rem; font-weight: 900;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+    border: 2px solid #fff;
+  }
+  .match-score span { font-size: 0.7rem; font-weight: 700; opacity: 0.7; margin-left: 1px; }
+
+  .why {
+    background: #f8faf3;
+    border-left: 3px solid var(--court);
+    padding: 0.7rem 0.9rem;
+    border-radius: 8px;
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #2c3a31;
+  }
+  .why-label {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--court); font-weight: 800; margin-bottom: 0.25rem;
+  }
+
+  .buy-btn.primary {
+    background: var(--court-dark);
+    padding: 0.7rem 1.1rem;
+    font-size: 0.92rem;
+  }
+  .buy-btn.primary:hover { background: #0f3a1d; }
+
+  /* Mobile polish */
+  @media (max-width: 540px) {
+    main { padding: 0 0.7rem 2rem; margin: -2rem auto 1rem; }
+    .card { padding: 1.1rem 1rem; border-radius: 14px; }
+    .hero { padding: 2rem 1rem 3.5rem; }
+    .pick { padding: 0.95rem 1rem; }
+    .pick-head { gap: 0.7rem; }
+    .pick-img { flex: 0 0 56px; }
+    .pick h3 { font-size: 1.05rem; }
+    .match-score { width: 46px; height: 46px; font-size: 1.05rem; top: 10px; right: 10px; }
+    .specs { font-size: 0.78rem; gap: 0.3rem 0.65rem; }
+    .why { font-size: 0.85rem; padding: 0.6rem 0.75rem; }
+    .persona-label { font-size: 1.2rem; }
+    .summary { font-size: 0.84rem; }
+  }
+
   button.email-btn {
     display: inline-flex;
     align-items: center;
@@ -770,12 +886,35 @@ function pickString(racket, levelIdx, swingIdx, style, arm, userPref) {
   return any[0]?.s || null;
 }
 
-function recommendedTension(string, racket) {
-  const mid = (string.Tension_Min_lbs + string.Tension_Max_lbs) / 2;
-  let adj = 0;
-  if (racket.Stiffness_RA >= 70) adj -= 2;
-  if (racket.Stiffness_RA <= 62) adj += 1;
-  return Math.round(mid + adj);
+// Smarter tension calculator — uses string type, frame stiffness, swing speed, body weight, level
+function recommendedTension(string, racket, player) {
+  const min = string.Tension_Min_lbs;
+  const max = string.Tension_Max_lbs;
+  let t = (min + max) / 2;
+
+  // Frame stiffness — stiffer frames sting; drop tension for comfort
+  if (racket.Stiffness_RA >= 70) t -= 2;
+  else if (racket.Stiffness_RA <= 62) t += 1;
+
+  // Swing speed — faster swings need lower tension for spin and control
+  if (player.swingIdx >= 4) t -= 2;       // Fast
+  if (player.swingIdx >= 6) t -= 1;       // Very Fast (additive)
+  if (player.swingIdx <= 1) t += 1;       // Slow swing — go higher for accuracy
+
+  // Player body — heavier players hit harder; lower tension for control
+  if (player.weightLb > 180) t -= 1;
+  if (player.weightLb < 130) t += 1;
+
+  // Skill level — advanced players prefer lower tension for snap-back
+  if (player.levelIdx >= 4) t -= 1;
+  if (player.levelIdx <= 1) t += 1;
+
+  // Poly is conventionally strung 2 lb below printed mid-range (it's harsher)
+  if (string.String_Type === "Polyester") t -= 1;
+
+  // Soft clamp — allow ±2 lb beyond printed range
+  t = Math.max(min - 2, Math.min(max + 2, t));
+  return Math.round(t);
 }
 
 // Google Shopping lands directly on the actual product across merchants
@@ -815,12 +954,166 @@ function parseNotes(text) {
   return adj;
 }
 
+// Brand color palette (used to tint the SVG racket illustration)
+const BRAND_COLORS = {
+  "Wilson":     { frame: "#c41e3a", grip: "#1a1a1a", accent: "#fff" },
+  "Babolat":    { frame: "#1a1a1a", grip: "#f7e017", accent: "#f7e017" },
+  "Head":       { frame: "#1a1a1a", grip: "#c41e3a", accent: "#c41e3a" },
+  "Yonex":      { frame: "#003d7a", grip: "#1a1a1a", accent: "#fff" },
+  "Prince":     { frame: "#1e90c4", grip: "#1a1a1a", accent: "#fff" },
+  "Tecnifibre": { frame: "#1a3a6c", grip: "#f47b20", accent: "#f47b20" },
+  "Dunlop":     { frame: "#f7e017", grip: "#1a1a1a", accent: "#1a1a1a" }
+};
+
+// Stylized SVG racket — colored by brand
+function racketSVG(brand) {
+  const c = BRAND_COLORS[brand] || { frame: "#2d6e3e", grip: "#1a1a1a", accent: "#fff" };
+  return `
+  <svg viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg" class="racket-svg" aria-hidden="true">
+    <!-- handle -->
+    <rect x="46" y="106" width="8" height="68" rx="2" fill="${c.grip}"/>
+    <!-- grip wrap accent stripes -->
+    <line x1="46" y1="118" x2="54" y2="122" stroke="${c.accent}" stroke-width="0.6" opacity="0.6"/>
+    <line x1="46" y1="130" x2="54" y2="134" stroke="${c.accent}" stroke-width="0.6" opacity="0.6"/>
+    <line x1="46" y1="142" x2="54" y2="146" stroke="${c.accent}" stroke-width="0.6" opacity="0.6"/>
+    <line x1="46" y1="154" x2="54" y2="158" stroke="${c.accent}" stroke-width="0.6" opacity="0.6"/>
+    <!-- yoke -->
+    <path d="M 36 106 Q 50 92 64 106" fill="none" stroke="${c.frame}" stroke-width="3" stroke-linecap="round"/>
+    <!-- head -->
+    <ellipse cx="50" cy="55" rx="36" ry="48" fill="none" stroke="${c.frame}" stroke-width="5"/>
+    <!-- strings -->
+    <g stroke="#f5f5ee" stroke-width="0.7" opacity="0.85">
+      <line x1="18" y1="35" x2="82" y2="35"/>
+      <line x1="16" y1="50" x2="84" y2="50"/>
+      <line x1="15" y1="65" x2="85" y2="65"/>
+      <line x1="17" y1="80" x2="83" y2="80"/>
+      <line x1="22" y1="95" x2="78" y2="95"/>
+      <line x1="32" y1="10" x2="32" y2="100"/>
+      <line x1="42" y1="8"  x2="42" y2="103"/>
+      <line x1="50" y1="7"  x2="50" y2="104"/>
+      <line x1="58" y1="8"  x2="58" y2="103"/>
+      <line x1="68" y1="10" x2="68" y2="100"/>
+    </g>
+    <!-- ball mark -->
+    <circle cx="78" cy="22" r="5" fill="#d4ee5c" stroke="#fff" stroke-width="0.8" opacity="0.9"/>
+  </svg>`;
+}
+
+// Match score 0–100 — normalized so a "great match" lands ~90+, decent ~75+, etc.
+function normalizedScore(raw) {
+  // Realistic max plausible: ~115 (level 35 + swing 25 + style 24 + weight 14 + arm 2 + volley 9 + frame-notes 12 + brand 10 + a bit of slack)
+  // Anchor: a perfect base match (no notes) = ~88 → that should read as 92 on screen.
+  const score = Math.max(40, Math.min(100, Math.round((raw / 100) * 95)));
+  return score;
+}
+
+// "Why this racket" — synthesized 2–3 sentences from the matched attributes
+function whyRacket(m, ctx) {
+  const r = m.r;
+  const out = [];
+
+  // Frame character lead-in
+  const frameLead = {
+    "Player's":        `The ${r.Model} is a true player's frame — heavy, head-light, made for refined technique.`,
+    "Control":         `The ${r.Model} is a control specialist — predictable response, tight feedback, tour-grade feel.`,
+    "Control/Tweener": `The ${r.Model} sits in the control-tweener sweet spot — feel without sacrificing comfort.`,
+    "Tweener":         `The ${r.Model} is a balanced tweener — easy to swing, plays well across the court.`,
+    "Power":           `The ${r.Model} is built for free power — point-and-shoot off both wings.`,
+    "Power/Tweener":   `The ${r.Model} blends power with a friendly swingweight.`,
+    "Spin/Power":      `The ${r.Model} is a spin-and-power frame — open pattern, lively response, made for heavy topspin.`,
+    "Spin/Control":    `The ${r.Model} is a spin frame with control bones — rewards full cuts.`,
+    "Spin/Tweener":    `The ${r.Model} is a spin-tweener — friendly, snappy, modern.`,
+  };
+  out.push(frameLead[r.Frame_Type] || `The ${r.Model} is a versatile modern frame.`);
+
+  // Why it matches the profile
+  const reasons = [];
+  if (m.tags.some(t => t.includes("matches your level"))) reasons.push(`your ${ctx.level.toLowerCase()} level`);
+  if (m.tags.some(t => t.includes("matches your swing")))  reasons.push(`${ctx.swing.toLowerCase()} swing speed`);
+  if (m.tags.some(t => t.includes("ideal for your style"))) reasons.push(`${ctx.style.toLowerCase()} game`);
+  else if (m.tags.some(t => t.includes("compatible style"))) reasons.push(`compatible-with-${ctx.style.toLowerCase()} game`);
+  if (m.tags.some(t => t.startsWith("✓ weight fits"))) reasons.push(`body type (target ${ctx.targetWeight.toFixed(1)} oz)`);
+  if (ctx.arm === "Yes" && r.Arm_Friendly === "Yes") reasons.push("arm comfort");
+  if (m.tags.some(t => t.includes("great at net"))) reasons.push("strong volley game");
+
+  if (reasons.length) {
+    out.push(`It matches your ${reasons.slice(0, 4).join(", ")}.`);
+  }
+
+  // Spec call-out
+  const ext = [];
+  if (r.String_Pattern === "18x20") ext.push("the tight 18×20 pattern adds control on flatter strikes");
+  else if (r.String_Pattern === "16x19") ext.push("the open 16×19 pattern grabs the ball for spin");
+  else if (r.String_Pattern === "16x18" || r.String_Pattern === "18x16") ext.push("the unconventional pattern boosts spin without giving up too much feel");
+  if (r.Stiffness_RA <= 62) ext.push("the flexible RA makes it gentle on the arm");
+  else if (r.Stiffness_RA >= 70) ext.push("the stiff layup gives free pace on contact");
+  if (ext.length) out.push(`Bonus: ${ext.slice(0, 2).join("; ")}.`);
+
+  return out.join(" ");
+}
+
+// Personality label from the profile
+function personalityLabel(ctx) {
+  const s = ctx.style, lv = ctx.levelIdx, sw = ctx.swingIdx, vol = ctx.volley;
+  if (s === "Aggressive Baseliner" && sw >= 4 && lv >= 4) return { label: "The Spin King 👑", blurb: "Heavy ball, big shape, run-around forehands. You bring the fireworks." };
+  if (s === "Aggressive Baseliner") return { label: "The Baseliner Beast 💪", blurb: "Big cuts, big spin, big intentions. Everything starts from the back." };
+  if (s === "Control Baseliner")    return { label: "The Tactician 🎯", blurb: "Flat, deep, redirective. You win by moving the other player around." };
+  if (s === "Serve-Volley")          return { label: "The Net Hawk 🦅", blurb: "Short points, soft hands, classic style. The court shrinks when you close." };
+  if (lv <= 1)                       return { label: "The Rising Star 🌟", blurb: "You're at the start of the curve — pick a forgiving frame and grow into the spin game." };
+  if (ctx.arm === "Yes")             return { label: "The Smart Player 🧠", blurb: "You picked comfort. Most players regret not doing this until they're injured." };
+  if (s === "All-Court" && lv >= 4)  return { label: "The All-Court Surgeon 🩺", blurb: "Pattern, footwork, variety. Hard to play against — easy to admire." };
+  if (s === "All-Court" && vol >= 3) return { label: "The Modern Allrounder 🎾", blurb: "Comfortable everywhere on the court. The most adaptable archetype in tennis." };
+  return { label: "The Player 🎾", blurb: "Solid foundation, open game. The right frame will sharpen everything." };
+}
+
+// Build a shareable URL with all form inputs in the hash
+function buildShareURL() {
+  const params = new URLSearchParams();
+  ["height","weight","grip","level","swing","style","volley","arm","utr","usta","budget","stringpref","email"].forEach(id => {
+    const v = (document.getElementById(id).value || "").trim();
+    if (v) params.set(id, v);
+  });
+  const notes = (document.getElementById("notes").value || "").trim();
+  if (notes) params.set("notes", notes);
+  return location.origin + location.pathname + "#" + params.toString();
+}
+
+function copyShareLink(btn) {
+  const url = buildShareURL();
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = "✓ Copied!";
+    btn.style.background = "var(--court)";
+    btn.style.color = "#fff";
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ""; btn.style.color = ""; }, 1800);
+  }).catch(() => {
+    prompt("Copy this share link:", url);
+  });
+}
+
+// On page load, populate form from URL hash and auto-run
+window.addEventListener("DOMContentLoaded", () => {
+  if (!location.hash) return;
+  const params = new URLSearchParams(location.hash.slice(1));
+  let ran = false;
+  for (const [k, v] of params) {
+    const el = document.getElementById(k);
+    if (el) { el.value = v; ran = true; }
+  }
+  if (ran && params.has("level")) setTimeout(recommend, 100);
+});
+
 // Build the mailto: body for "Email me my results"
 function buildEmailMailto(email, ctx, top) {
   const lines = [];
   lines.push("Your Racket IQ recommendation");
   lines.push("===============================");
   lines.push("");
+  if (ctx.persona) {
+    lines.push(`PLAYER TYPE: ${ctx.persona.label}`);
+    lines.push(ctx.persona.blurb);
+    lines.push("");
+  }
   lines.push("YOUR PROFILE");
   lines.push(`Height ${ctx.heightIn}\" · Weight ${ctx.weightLb} lb · Grip L${ctx.gripIdx}`);
   lines.push(`Level: ${ctx.level}${ctx.utr?` · UTR ${ctx.utr}`:""}${ctx.usta?` · USTA ${ctx.usta}`:""}`);
@@ -838,9 +1131,10 @@ function buildEmailMailto(email, ctx, top) {
     const r = m.r, s = m.string;
     const rank = i === 0 ? "★ #1 TOP COMBO" : `#${i+1}`;
     lines.push("");
-    lines.push(`${rank}: ${r.Brand} ${r.Model} (${r.Year})  —  $${r.Price_USD}`);
+    lines.push(`${rank}: ${r.Brand} ${r.Model} (${r.Year})  —  $${r.Price_USD}  ·  Match ${m.matchScore}/100`);
     lines.push(`  Specs: ${r.Weight_Strung_oz.toFixed(1)} oz · ${r.Head_Size_sqin}" head · ${r.String_Pattern} · ${r.Balance_pts} · SW ${r.Swingweight} · RA ${r.Stiffness_RA} · ${r.Frame_Type}`);
-    lines.push(`  Why: ${m.tags.join(", ")}`);
+    if (m.why) lines.push(`  Why: ${m.why}`);
+    if (m.tags.length) lines.push(`  Tags: ${m.tags.join(", ")}`);
     if (s) {
       lines.push(`  String: ${s.Brand} ${s.Model} (${s.String_Type}) — ${s.Gauge_Name} gauge at ${m.tension} lb`);
       lines.push(`  Buy racket: ${buyURL(r.Brand, r.Model)}`);
@@ -854,6 +1148,11 @@ function buildEmailMailto(email, ctx, top) {
   lines.push("───");
   lines.push("Generated by Racket IQ");
   lines.push("https://kedarsnd-ai.github.io/racket-recommender/");
+  if (ctx.shareURL) {
+    lines.push("");
+    lines.push("Share this exact recommendation:");
+    lines.push(ctx.shareURL);
+  }
 
   const body = lines.join("\n");
   const subject = `Your Racket IQ recommendation — ${top[0].r.Brand} ${top[0].r.Model}`;
@@ -977,10 +1276,12 @@ function recommend() {
     return;
   }
 
+  const playerCtx = { swingIdx: playerSwingIdx, levelIdx: playerLevelIdx, weightLb };
   top.forEach(m => {
     const s = pickString(m.r, playerLevelIdx, playerSwingIdx, style, arm, stringPref);
     m.string = s;
-    m.tension = s ? recommendedTension(s, m.r) : null;
+    m.tension = s ? recommendedTension(s, m.r, playerCtx) : null;
+    m.matchScore = normalizedScore(m.score);
   });
 
   const volleyLabel = ["","weak","developing","solid","strong"][volley] || "developing";
@@ -995,20 +1296,22 @@ function recommend() {
       ${notes.extraTags.length ? `<br><span style="font-size:0.82rem">📝 ${notes.extraTags.join(" · ")}</span>` : ""}
     </div>`;
 
+  const whyCtx = { level, swing, style, arm, targetWeight, levelIdx: playerLevelIdx, swingIdx: playerSwingIdx, volley };
+
   const cards = top.map((m, i) => {
     const r = m.r, s = m.string;
     const stringBlock = s ? `
       <div class="string-row">
-        <div class="label">Recommended string</div>
+        <div class="label">Recommended string · custom-tuned tension</div>
         <div><span class="grade">${s.String_Type}</span><span class="name">${s.Brand} ${s.Model}</span></div>
         <div class="meta">
           ${s.Gauge_Name} gauge · ${s.Gauge_mm} mm · tension <strong>${m.tension} lb</strong>
-          (range ${s.Tension_Min_lbs}–${s.Tension_Max_lbs})
+          (printed range ${s.Tension_Min_lbs}–${s.Tension_Max_lbs})
           · spin ${s.Spin_Potential}/5 · power ${s.Power_Level}/5 · control ${s.Control_Level}/5
           ${s.Arm_Friendly === "Yes" ? " · arm-friendly" : ""}
         </div>
         <a class="buy-btn" href="${buyStringURL(s.Brand, s.Model)}" target="_blank" rel="noopener">
-          Find string
+          Buy this string
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17 17 7"/><path d="M8 7 h9 v9"/></svg>
         </a>
       </div>` : `<div class="string-row"><div class="label">String</div><div class="meta">No matching string in DB.</div></div>`;
@@ -1016,9 +1319,15 @@ function recommend() {
     return `
     <div class="pick ${i === 0 ? "gold" : ""}">
       <span class="rank">${i === 0 ? "★ TOP COMBO" : "#" + (i+1)}</span>
-      <span class="price">$${r.Price_USD}</span>
-      <div class="brand">${r.Brand}</div>
-      <h3>${r.Model} <span class="yr">(${r.Year})</span></h3>
+      <div class="match-score" title="Match score">${m.matchScore}<span>/100</span></div>
+      <div class="pick-head">
+        <div class="pick-img">${racketSVG(r.Brand)}</div>
+        <div class="pick-meta">
+          <div class="brand">${r.Brand}</div>
+          <h3>${r.Model} <span class="yr">(${r.Year})</span></h3>
+          <div class="price-line">$${r.Price_USD}<span class="price-note"> approx. MSRP</span></div>
+        </div>
+      </div>
       <div class="specs">
         <span><strong>${r.Weight_Strung_oz.toFixed(1)} oz</strong> strung</span>
         <span>${r.Head_Size_sqin}″ head</span>
@@ -1027,12 +1336,15 @@ function recommend() {
         <span>SW ${r.Swingweight}</span>
         <span>RA ${r.Stiffness_RA}</span>
         <span>${r.Frame_Type}</span>
-        <span>grips ${r.Grip_Size_Range}</span>
+      </div>
+      <div class="why">
+        <div class="why-label">Why this racket</div>
+        ${whyRacket(m, whyCtx)}
       </div>
       <div class="tags">${m.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
       ${stringBlock}
-      <a class="buy-btn" href="${buyURL(r.Brand, r.Model)}" target="_blank" rel="noopener">
-        Find this racket
+      <a class="buy-btn primary" href="${buyURL(r.Brand, r.Model)}" target="_blank" rel="noopener">
+        Buy this racket on Google Shopping
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17 17 7"/><path d="M8 7 h9 v9"/></svg>
       </a>
     </div>`;
@@ -1045,13 +1357,18 @@ function recommend() {
       <div class="why">${c.why}</div>
     </div>`).join("");
 
+  // Attach the why-text to each pick so the email can use it
+  top.forEach(m => { m.why = whyRacket(m, whyCtx); });
+
   // Stash ctx for the email button
   window._lastResults = {
     top,
     ctx: {
       heightIn, weightLb, gripIdx, level, swing, style, volleyLabel,
       arm, utr, usta, budget, stringPref, notesText,
-      parsedTags: notes.extraTags, targetWeight
+      parsedTags: notes.extraTags, targetWeight,
+      persona,
+      shareURL: buildShareURL()
     }
   };
 
@@ -1069,9 +1386,33 @@ function recommend() {
       </button>
     </div>`;
 
+  // Personality label
+  const persona = personalityLabel({ style, levelIdx: playerLevelIdx, swingIdx: playerSwingIdx, arm, volley });
+  const personaBlock = `
+    <div class="persona">
+      <div class="persona-eyebrow">Your player profile</div>
+      <div class="persona-label">${persona.label}</div>
+      <div class="persona-blurb">${persona.blurb}</div>
+    </div>`;
+
+  // Share-link button
+  const shareBlock = `
+    <div class="share-row">
+      <button class="share-btn" onclick="copyShareLink(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/>
+          <path d="M8.6 10.5l6.8-3"/><path d="M8.6 13.5l6.8 3"/>
+        </svg>
+        Copy share link
+      </button>
+      <span class="share-note">Anyone opening it sees the same form pre-filled with your inputs.</span>
+    </div>`;
+
   out.innerHTML = `
     <div class="card">
+      ${personaBlock}
       ${summary}
+      ${shareBlock}
       <h2 class="section-title">Your top 3 setups</h2>
       ${cards}
       <h2 class="section-title">Iconic pro combos</h2>
