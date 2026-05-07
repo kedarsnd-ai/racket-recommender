@@ -39,6 +39,30 @@
     opacity: 0.15;
     pointer-events: none;
   }
+  .coach-badge {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    z-index: 3;
+    display: flex; align-items: center; gap: 0.55rem;
+    background: rgba(255,255,255,0.95);
+    color: var(--court-dark);
+    padding: 0.55rem 0.85rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    border: 1.5px solid var(--ball);
+    font-size: 0.78rem;
+    line-height: 1.2;
+    max-width: 230px;
+  }
+  .coach-badge strong { display: block; font-weight: 800; font-size: 0.82rem; }
+  .coach-badge span { font-size: 0.7rem; color: var(--muted); }
+  .coach-badge svg { width: 22px; height: 22px; flex: 0 0 22px; color: var(--gold); fill: var(--ball); }
+  @media (max-width: 540px) {
+    .coach-badge { top: 0.6rem; right: 0.6rem; max-width: 165px; padding: 0.4rem 0.6rem; gap: 0.4rem; }
+    .coach-badge strong { font-size: 0.74rem; }
+    .coach-badge span { font-size: 0.65rem; }
+    .coach-badge svg { width: 18px; height: 18px; flex: 0 0 18px; }
+  }
   .hero-inner { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; }
   .hero h1 {
     font-size: clamp(1.8rem, 4.5vw, 2.6rem);
@@ -519,7 +543,10 @@
     font-size: 0.78rem;
     line-height: 1.15;
     box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
   }
+  .slam:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.35); filter: brightness(1.08); }
   .slam strong { display: block; font-size: 0.88rem; font-weight: 800; letter-spacing: 0.01em; }
   .slam span   { font-size: 0.7rem; opacity: 0.85; }
   .slam-ball {
@@ -574,6 +601,16 @@
     <line x1="400" y1="40" x2="400" y2="310" stroke="#fff" stroke-width="4" stroke-dasharray="3,4" opacity="0.85"/>
     <circle cx="290" cy="175" r="10" fill="#d4ee5c" stroke="#fff" stroke-width="1.5"/>
   </svg>
+
+  <div class="coach-badge" title="Algorithm validated by Vivian Chhetri, USPTA-certified coach">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 2 l2.4 5 5.5.8 -4 3.9 1 5.5 -4.9 -2.6 -4.9 2.6 1 -5.5 -4 -3.9 5.5 -.8z"/>
+    </svg>
+    <div>
+      <strong>Backed by Vivian Chhetri</strong>
+      <span>USPTA-certified coach</span>
+    </div>
+  </div>
 
   <div class="hero-inner">
     <div class="ball-icon" aria-hidden="true"></div>
@@ -741,22 +778,22 @@
 
 <section class="slams" aria-label="Grand Slam tournaments">
   <div class="slam-row">
-    <div class="slam ao" title="Australian Open · Hard court">
+    <a class="slam ao" href="https://ausopen.com" target="_blank" rel="noopener" title="Australian Open · Hard court">
       <div class="slam-ball"></div>
       <div class="slam-text"><strong>Australian Open</strong><span>Melbourne · January</span></div>
-    </div>
-    <div class="slam rg" title="Roland-Garros · Clay">
+    </a>
+    <a class="slam rg" href="https://www.rolandgarros.com" target="_blank" rel="noopener" title="Roland-Garros · Clay">
       <div class="slam-ball"></div>
       <div class="slam-text"><strong>Roland-Garros</strong><span>Paris · May–June</span></div>
-    </div>
-    <div class="slam wb" title="Wimbledon · Grass">
+    </a>
+    <a class="slam wb" href="https://www.wimbledon.com" target="_blank" rel="noopener" title="Wimbledon · Grass">
       <div class="slam-ball"></div>
       <div class="slam-text"><strong>Wimbledon</strong><span>London · June–July</span></div>
-    </div>
-    <div class="slam us" title="US Open · Hard court">
+    </a>
+    <a class="slam us" href="https://www.usopen.org" target="_blank" rel="noopener" title="US Open · Hard court">
       <div class="slam-ball"></div>
       <div class="slam-text"><strong>US Open</strong><span>New York · August–September</span></div>
-    </div>
+    </a>
   </div>
 </section>
 
@@ -1022,47 +1059,87 @@ function normalizedScore(raw) {
   return score;
 }
 
-// "Why this racket" — synthesized 2–3 sentences from the matched attributes
+// Racket-specific blurbs — one curated sentence per frame in the database
+const RACKET_BLURBS = {
+  R001: "Federer's signature blade — 12.5 oz of heavy, head-light precision with a thin beam that lets you feel every contact.",
+  R002: "The standard Pro Staff 97 — same refined Pro Staff DNA as the RF, slightly easier to swing all day.",
+  R003: "The Pro Staff in lighter trim — Pro Staff feel without needing tour-level swing speed; surprisingly arm-friendly.",
+  R004: "The most-played frame on the ATP tour — clean pocketing, an open pattern that grabs the ball, and that famous Blade flex.",
+  R005: "Same Blade chassis with a tighter 18×20 pattern — flatter trajectory, more first-strike control, less spin off the layup.",
+  R006: "The big-head Blade — 104 sq in and only 10.7 oz, with the same buttery RA 62 flex but a forgiving sweet spot.",
+  R007: "Easy power baseliner frame — head-heavy bias and stiff layup that punches above its weight on serves and groundies.",
+  R008: "The most flexible frame in the lineup at RA 55 — bends in your hand. Best-in-class arm comfort, period.",
+  R009: "The heavier Clash — keeps the signature flex but adds plow-through for advancing players. Comfort plus stability.",
+  R010: "The 18×16 spin pattern — fewer mains, more snapback, gnarly RPMs. Built for the modern aggressive baseliner.",
+  R011: "The all-time bestseller — RA 72, free power across the stringbed, alive on contact. The default for a generation.",
+  R012: "Pure Drive in extended length (27.5″) — bigger leverage on serves and groundstrokes for tall players.",
+  R013: "Tighter, more advanced Pure Drive — keeps the trampoline feel but rewards better technique with more control.",
+  R014: "Nadal's frame — the modern spin standard. Beefy 26mm beam and an open 16×19 that produces topspin from contact.",
+  R015: "The smaller, more refined Aero — Pure Aero spin in a frame that punches through the court, head-light and sharp.",
+  R016: "Extended Pure Aero (27.5″) — bigger leverage on the serve while keeping that signature spin-friendly response.",
+  R017: "Control-spin hybrid — less powerful than a Pure Drive, more spin-friendly than a Blade. Lives in a uniquely useful middle.",
+  R018: "The tightly-strung 18×20 Pure Strike — built for precision flat-ball strikers; plows through when you commit to the shot.",
+  R019: "The throwback player's frame — modern construction, classic geometry, 10-point head-light. For the all-courter who values feel.",
+  R020: "Djokovic's family in MP trim — lightning-quick through the air and the most balanced frame Head makes.",
+  R021: "Closest available to Djokovic's actual setup — 12 oz, head-light, 18×20 pattern. Tour-level control and stability.",
+  R022: "The lightweight Speed — faster swings, bigger sweet spot, easier shoulder load. Speed at its friendliest.",
+  R023: "The most flexible player's frame in the DB — RA 61, 95 head, old-school feel from modern materials.",
+  R024: "The most demanding frame here — 12.4 oz, 11-point head-light, RA 60. Reserved for pros who hit with full strokes.",
+  R025: "The all-court Head — sits between the faster Speed and the heavier Prestige. Solid pick for advancing intermediates.",
+  R026: "Head's spin frame — 26mm beam, RA 68, open pattern. Stiff feel, big spin and power for aggressive baseliners.",
+  R027: "Easy power for steady players — sits in the Pure Drive zone; gives free pace without demanding fast technique.",
+  R028: "Bridge frame — Head's MXG fusion tech feels both stiff and damped. Niche but distinct.",
+  R029: "Yonex's most-played control-tweener — buttery feel and the isometric head shape that adds a real sweet-spot bump.",
+  R030: "The 100-head EZONE — friendly access to spin and power. Yonex's answer to the Pure Drive / Speed MP space.",
+  R031: "Lighter EZONE 98 — same control character with less mass. Junior-friendly and great for senior players who want EZONE feel.",
+  R032: "Yonex's spin frame — open pattern, RA 66, snappier than a Pure Aero in a smaller head. For aggressive shape-makers.",
+  R033: "VCORE in 100 trim — slightly easier to use than the 98, blending spin and power for spin-curious intermediates.",
+  R034: "Replaced the VCORE Pro — RA 59, the most flexible Yonex player's frame. For advanced all-courters who chase feel.",
+  R035: "Percept 100 — flexible all-court 100, sits between an EZONE (tweener) and VCORE (control). Versatile and arm-friendly.",
+  R036: "Tweener with a mid-tier price tag — solid pickup for intermediates without paying flagship money.",
+  R037: "Old-school Phantom — flexible RA 60 with an 18×20 pattern. Cult favorite among advanced flat-ball strikers.",
+  R038: "Phantom in 16×18 — slight spin upgrade over the 100X with the same flexible RA 60 chassis.",
+  R039: "Spanish-made player's frame — tour-grade feel at a more accessible weight; sneaky-good value.",
+  R040: "The popular TFight — control-bias 11.6 oz frame. Medvedev-style precision feel without the price tag.",
+  R041: "Lighter TFight — 10.9 oz, easy to swing, refined feel. Friendly intermediate option.",
+  R042: "Tweener Tecnifibre — RA 66, more lively, power-leaning. For improving players who want some help.",
+  R043: "Dunlop's main control frame — plays a lot like a Blade with a different feel character, at a friendlier price.",
+  R044: "Control-tour CX — 12 oz, 18×20 pattern. For advanced players who want flat depth and predictable feedback.",
+  R045: "Dunlop's spin frame — 27mm beam, RA 68, generous power. Aggressive-baseliner-friendly.",
+  R046: "Dunlop's tweener — easier swing, free power. Modern beginner-friendly frame."
+};
+
+// "Why this racket" — racket-specific blurb + player-fit reasons
 function whyRacket(m, ctx) {
   const r = m.r;
   const out = [];
 
-  // Frame character lead-in
-  const frameLead = {
-    "Player's":        `The ${r.Model} is a true player's frame — heavy, head-light, made for refined technique.`,
-    "Control":         `The ${r.Model} is a control specialist — predictable response, tight feedback, tour-grade feel.`,
-    "Control/Tweener": `The ${r.Model} sits in the control-tweener sweet spot — feel without sacrificing comfort.`,
-    "Tweener":         `The ${r.Model} is a balanced tweener — easy to swing, plays well across the court.`,
-    "Power":           `The ${r.Model} is built for free power — point-and-shoot off both wings.`,
-    "Power/Tweener":   `The ${r.Model} blends power with a friendly swingweight.`,
-    "Spin/Power":      `The ${r.Model} is a spin-and-power frame — open pattern, lively response, made for heavy topspin.`,
-    "Spin/Control":    `The ${r.Model} is a spin frame with control bones — rewards full cuts.`,
-    "Spin/Tweener":    `The ${r.Model} is a spin-tweener — friendly, snappy, modern.`,
-  };
-  out.push(frameLead[r.Frame_Type] || `The ${r.Model} is a versatile modern frame.`);
+  // 1) Specific blurb for THIS racket (curated copy per model)
+  const blurb = RACKET_BLURBS[r.Racket_ID] || `The ${r.Brand} ${r.Model} is a ${r.Frame_Type.toLowerCase()} frame.`;
+  out.push(blurb);
 
-  // Why it matches the profile
+  // 2) Why it fits this specific player — reasons drawn from match outcomes
   const reasons = [];
   if (m.tags.some(t => t.includes("matches your level"))) reasons.push(`your ${ctx.level.toLowerCase()} level`);
   if (m.tags.some(t => t.includes("matches your swing")))  reasons.push(`${ctx.swing.toLowerCase()} swing speed`);
   if (m.tags.some(t => t.includes("ideal for your style"))) reasons.push(`${ctx.style.toLowerCase()} game`);
-  else if (m.tags.some(t => t.includes("compatible style"))) reasons.push(`compatible-with-${ctx.style.toLowerCase()} game`);
-  if (m.tags.some(t => t.startsWith("✓ weight fits"))) reasons.push(`body type (target ${ctx.targetWeight.toFixed(1)} oz)`);
+  else if (m.tags.some(t => t.includes("compatible style"))) reasons.push(`a ${ctx.style.toLowerCase()} game`);
+  if (m.tags.some(t => t.startsWith("✓ weight fits"))) reasons.push(`your body type (target ${ctx.targetWeight.toFixed(1)} oz)`);
   if (ctx.arm === "Yes" && r.Arm_Friendly === "Yes") reasons.push("arm comfort");
-  if (m.tags.some(t => t.includes("great at net"))) reasons.push("strong volley game");
+  if (m.tags.some(t => t.includes("great at net"))) reasons.push("strong volleys");
 
   if (reasons.length) {
-    out.push(`It matches your ${reasons.slice(0, 4).join(", ")}.`);
+    out.push(`Right for you because it matches ${reasons.slice(0, 4).join(", ")}.`);
   }
 
-  // Spec call-out
-  const ext = [];
-  if (r.String_Pattern === "18x20") ext.push("the tight 18×20 pattern adds control on flatter strikes");
-  else if (r.String_Pattern === "16x19") ext.push("the open 16×19 pattern grabs the ball for spin");
-  else if (r.String_Pattern === "16x18" || r.String_Pattern === "18x16") ext.push("the unconventional pattern boosts spin without giving up too much feel");
-  if (r.Stiffness_RA <= 62) ext.push("the flexible RA makes it gentle on the arm");
-  else if (r.Stiffness_RA >= 70) ext.push("the stiff layup gives free pace on contact");
-  if (ext.length) out.push(`Bonus: ${ext.slice(0, 2).join("; ")}.`);
+  // 3) Spec-driven nuance unique to this frame's setup
+  const nuance = [];
+  if (r.String_Pattern === "18x20") nuance.push(`the dense 18×20 pattern keeps the ball on a string for ${ctx.style === "Control Baseliner" ? "your flat depth" : "predictable depth"}`);
+  else if (r.String_Pattern === "16x19") nuance.push(`the 16×19 pattern bites the ball for ${ctx.style === "Aggressive Baseliner" ? "the heavy spin you're producing" : "natural shape"}`);
+  else if (r.String_Pattern === "16x18" || r.String_Pattern === "18x16") nuance.push("the unconventional pattern adds snapback for extra spin");
+  if (r.Stiffness_RA <= 62) nuance.push(`the flexible RA ${r.Stiffness_RA} layup is easy on the arm`);
+  else if (r.Stiffness_RA >= 70) nuance.push(`the stiff RA ${r.Stiffness_RA} frame gives you free pace on contact`);
+  if (nuance.length) out.push(`Plus, ${nuance.slice(0, 2).join("; ")}.`);
 
   return out.join(" ");
 }
@@ -1396,7 +1473,7 @@ function recommend() {
       <div class="tags">${m.tags.map(t => `<span class="tag${t.startsWith("⚠") ? " warn" : ""}">${t}</span>`).join("")}</div>
       ${stringBlock}
       <a class="buy-btn primary" href="${buyURL(r.Brand, r.Model)}" target="_blank" rel="noopener">
-        Buy this racket on Google Shopping
+        Buy this racket
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17 17 7"/><path d="M8 7 h9 v9"/></svg>
       </a>
     </div>`;
