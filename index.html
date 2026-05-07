@@ -439,6 +439,21 @@
     font-size: 0.75rem;
     font-weight: 600;
   }
+  .tag.warn {
+    background: #fff3cd;
+    color: #785500;
+    border: 1px solid #ffd97a;
+  }
+  .relax-banner {
+    background: #fff7d6;
+    border: 1px solid #ffd97a;
+    border-radius: 10px;
+    padding: 0.7rem 0.95rem;
+    color: #6b4d00;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+  }
+  .relax-banner strong { color: #5a3d00; }
 
   .buy-btn {
     display: inline-flex;
@@ -1123,6 +1138,10 @@ function buildEmailMailto(email, ctx, top) {
   if (ctx.notesText && ctx.notesText.trim()) lines.push(`Notes: ${ctx.notesText.trim()}`);
   if (ctx.parsedTags.length) lines.push(`(detected: ${ctx.parsedTags.join(" · ")})`);
   lines.push(`Target frame weight: ${ctx.targetWeight.toFixed(1)} oz`);
+  if (ctx.relaxations && ctx.relaxations.length) {
+    lines.push("");
+    lines.push("Note: " + ctx.relaxations.join(" · "));
+  }
   lines.push("");
   lines.push("TOP 3 RECOMMENDATIONS");
   lines.push("=====================");
@@ -1212,34 +1231,29 @@ function recommend() {
   const playerSwingIdx = SWING_ORDER.indexOf(swing);
   const targetWeight = idealRacketWeight(heightIn, weightLb) + notes.weightDelta;
 
-  const scored = RACKETS.map(r => {
-    if (r.Price_USD > budget) return null;
-    if (!gripFits(gripIdx, r.Grip_Size_Range)) return null;
+  // Score every racket — soft scoring even when filters wouldn't pass
+  function scoreOne(r) {
     const lvlR = rangeOf(r.Skill_Level, LEVEL_ORDER);
     const swR  = rangeOf(r.Swing_Speed_Fit, SWING_ORDER);
     const lvlDist = distanceTo(playerLevelIdx, lvlR);
     const swDist  = distanceTo(playerSwingIdx, swR);
-    if (lvlDist > 1 || swDist > 1) return null;
-    if (arm === "Yes" && r.Arm_Friendly !== "Yes") return null;
 
-    const lvlPts   = lvlDist === 0 ? 35 : 18;
-    const swPts    = swDist === 0 ? 25 : 12;
+    const lvlPts   = lvlDist === 0 ? 35 : Math.max(0, 18 - lvlDist * 5);
+    const swPts    = swDist === 0 ? 25 : Math.max(0, 12 - swDist * 4);
     const stylePts = styleScore(style, r.Play_Style_Fit) * 12;
     const wDelta   = Math.abs(r.Weight_Strung_oz - targetWeight);
     const wPts     = Math.max(0, 14 - wDelta * 14);
     const armPts   = (r.Arm_Friendly === "Yes") ? 2 : 0;
 
-    // Volley skill: high volley → bonus for head-light + maneuverable frames
     let volleyPts = 0;
     if (volley >= 3) {
       const balPts = (r.Balance_pts || "").match(/(\d+)\s*HL/);
       const hl = balPts ? +balPts[1] : 0;
-      if (hl >= 6) volleyPts += 5;        // head-light = better at net
+      if (hl >= 6) volleyPts += 5;
       if (r.Swingweight && r.Swingweight <= 320) volleyPts += 4;
       if (style === "Serve-Volley") volleyPts += 4;
     }
 
-    // Notes: frame-type bonus
     let noteFramePts = 0;
     for (const k of Object.keys(notes.boostFrame)) {
       if ((r.Frame_Type || "").includes(k)) noteFramePts += notes.boostFrame[k];
@@ -1251,7 +1265,10 @@ function recommend() {
 
     const tags = [];
     if (lvlDist === 0) tags.push("✓ matches your level");
+    else tags.push(`⚠ best for ${r.Skill_Level.toLowerCase()}`);
     if (swDist === 0)  tags.push("✓ matches your swing");
+    else if (swDist === 1) tags.push("· near your swing speed");
+    else tags.push(`⚠ tuned for ${r.Swing_Speed_Fit.toLowerCase()}`);
     if (stylePts >= 18) tags.push("✓ ideal for your style");
     else if (stylePts >= 12) tags.push("· compatible style");
     if (wDelta < 0.3) tags.push(`✓ weight fits (${r.Weight_Strung_oz.toFixed(1)}oz)`);
@@ -1260,21 +1277,52 @@ function recommend() {
     if (brandPts) tags.push(`✓ ${notes.brandPref} brand`);
     notes.extraTags.forEach(t => tags.push(t));
 
-    return { r, score, tags };
-  }).filter(Boolean).sort((a, b) => b.score - a.score);
+    return { r, score, tags, lvlDist, swDist };
+  }
+
+  // Filter+score with a given strictness level
+  function runFilters(opts) {
+    return RACKETS.map(r => {
+      if (opts.budget && r.Price_USD > budget) return null;
+      if (opts.grip && !gripFits(gripIdx, r.Grip_Size_Range)) return null;
+      if (opts.arm && arm === "Yes" && r.Arm_Friendly !== "Yes") return null;
+      const m = scoreOne(r);
+      if (opts.level && m.lvlDist > 1) return null;
+      if (opts.swing && m.swDist > 1) return null;
+      return m;
+    }).filter(Boolean).sort((a, b) => b.score - a.score);
+  }
+
+  // Progressive relaxation — try strictest, drop one constraint at a time until we have results
+  const relaxations = [];
+  let scored = runFilters({ budget: true, grip: true, arm: true, level: true, swing: true });
+  if (!scored.length && arm === "Yes") {
+    scored = runFilters({ budget: true, grip: true, arm: false, level: true, swing: true });
+    if (scored.length) relaxations.push("no arm-friendly frames matched — showing closest options");
+  }
+  if (!scored.length) {
+    scored = runFilters({ budget: false, grip: true, arm: false, level: true, swing: true });
+    if (scored.length) relaxations.push("expanded budget — best in-spec options shown");
+  }
+  if (!scored.length) {
+    scored = runFilters({ budget: false, grip: false, arm: false, level: true, swing: true });
+    if (scored.length) relaxations.push("grip range expanded — most rackets come in multiple sizes anyway");
+  }
+  if (!scored.length) {
+    scored = runFilters({});  // no filters — all 46 ranked, take top 3 closest
+    relaxations.push("showing the closest frames overall — try widening your level/swing range for stricter fits");
+  }
+
+  // Mark over-budget rackets so the user sees the warning
+  scored.forEach(m => {
+    if (m.r.Price_USD > budget) m.tags.push(`⚠ $${m.r.Price_USD - budget} over budget`);
+    if (arm === "Yes" && m.r.Arm_Friendly !== "Yes") m.tags.push("⚠ not arm-friendly");
+    if (!gripFits(gripIdx, m.r.Grip_Size_Range)) m.tags.push(`⚠ grips ${m.r.Grip_Size_Range}`);
+  });
 
   const top = scored.slice(0, 3);
   const out = document.getElementById("results");
   out.classList.add("show");
-
-  if (!top.length) {
-    out.innerHTML = `<div class="card">
-      <h3 style="margin-top:0">No matches</h3>
-      <p>No frames fit those constraints. Try raising the budget, widening your grip range, or relaxing the arm-friendly filter.</p>
-    </div>`;
-    out.scrollIntoView({behavior:"smooth", block:"start"});
-    return;
-  }
 
   const playerCtx = { swingIdx: playerSwingIdx, levelIdx: playerLevelIdx, weightLb };
   top.forEach(m => {
@@ -1285,6 +1333,10 @@ function recommend() {
   });
 
   const volleyLabel = ["","weak","developing","solid","strong"][volley] || "developing";
+  const relaxBlock = relaxations.length ? `
+    <div class="relax-banner">
+      <strong>Heads up —</strong> ${relaxations.join(" · ")}.
+    </div>` : "";
   const summary = `
     <div class="summary">
       <strong>Profile:</strong> ${level}${utr?` · UTR ${utr}`:""}${usta?` · USTA ${usta}`:""}
@@ -1341,7 +1393,7 @@ function recommend() {
         <div class="why-label">Why this racket</div>
         ${whyRacket(m, whyCtx)}
       </div>
-      <div class="tags">${m.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      <div class="tags">${m.tags.map(t => `<span class="tag${t.startsWith("⚠") ? " warn" : ""}">${t}</span>`).join("")}</div>
       ${stringBlock}
       <a class="buy-btn primary" href="${buyURL(r.Brand, r.Model)}" target="_blank" rel="noopener">
         Buy this racket on Google Shopping
@@ -1370,7 +1422,7 @@ function recommend() {
       heightIn, weightLb, gripIdx, level, swing, style, volleyLabel,
       arm, utr, usta, budget, stringPref, notesText,
       parsedTags: notes.extraTags, targetWeight,
-      persona,
+      persona, relaxations,
       shareURL: buildShareURL()
     }
   };
@@ -1412,6 +1464,7 @@ function recommend() {
   out.innerHTML = `
     <div class="card">
       ${personaBlock}
+      ${relaxBlock}
       ${summary}
       ${shareBlock}
       <h2 class="section-title">Your top 3 setups</h2>
