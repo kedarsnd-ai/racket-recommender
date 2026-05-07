@@ -2,259 +2,550 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Tennis Racket Recommender</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tennis Setup Engine — Racket + String Recommender</title>
 <style>
+  :root {
+    --court: #2d6e3e;
+    --court-dark: #1d4e2a;
+    --court-line: #f4f1de;
+    --ball: #d4ee5c;
+    --ball-glow: #c8e85c;
+    --hard: #2b6cb0;
+    --ink: #14211a;
+    --muted: #6b7a72;
+    --gold: #d4af37;
+  }
   * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: linear-gradient(135deg, #0f4c3a 0%, #1a7d5a 50%, #c8e85c 100%);
-    color: #1a1a1a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     margin: 0;
+    background: #0d2418;
+    color: var(--ink);
     min-height: 100vh;
-    padding: 2rem 1rem;
   }
-  .container { max-width: 760px; margin: 0 auto; }
-  h1 {
+
+  /* ───── Hero with tennis court SVG ───── */
+  header.hero {
+    position: relative;
+    background: linear-gradient(180deg, #1d4e2a 0%, #2d6e3e 100%);
     color: #fff;
-    margin: 0 0 0.4rem;
-    font-size: 2rem;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    padding: 2.5rem 1.5rem 4rem;
+    overflow: hidden;
+    text-align: center;
   }
-  .subtitle { color: rgba(255,255,255,0.9); margin: 0 0 1.5rem; }
+  .court-bg {
+    position: absolute; inset: 0;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+    margin: 0.4rem 0 0.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+  }
+  .hero p {
+    margin: 0; opacity: 0.9; font-size: 1.05rem;
+  }
+  .ball-icon {
+    display: inline-block;
+    width: 56px; height: 56px;
+    background: radial-gradient(circle at 35% 30%, #f5ff9e, var(--ball) 60%, #97b540 100%);
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 30px rgba(212,238,92,0.5), inset -8px -8px 16px rgba(0,0,0,0.18);
+    margin-bottom: 0.4rem;
+  }
+  .ball-icon::before, .ball-icon::after {
+    content: "";
+    position: absolute;
+    border: 1.5px solid rgba(255,255,255,0.85);
+    border-radius: 50%;
+  }
+  .ball-icon::before { inset: -3px 25%; transform: rotate(-15deg); border-color: transparent rgba(255,255,255,0.85); }
+  .ball-icon::after  { inset: 25% -3px; transform: rotate(-15deg); border-color: rgba(255,255,255,0.85) transparent; }
+
+  /* ───── Form card ───── */
+  main {
+    max-width: 880px;
+    margin: -3rem auto 2rem;
+    padding: 0 1rem 2rem;
+    position: relative;
+    z-index: 5;
+  }
   .card {
     background: #fff;
-    border-radius: 14px;
-    padding: 1.8rem;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    border-radius: 18px;
+    padding: 1.5rem 1.6rem;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.22);
     margin-bottom: 1rem;
   }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  @media (max-width: 540px) { .row { grid-template-columns: 1fr; } }
+  fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 1.3rem;
+  }
+  legend {
+    font-weight: 700;
+    color: var(--court-dark);
+    font-size: 0.92rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  legend::before {
+    content: "";
+    display: inline-block;
+    width: 14px; height: 14px;
+    background: var(--ball);
+    border-radius: 50%;
+    box-shadow: inset -3px -3px 5px rgba(0,0,0,0.15);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+  }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; }
+  @media (max-width: 580px) {
+    .grid, .grid-3 { grid-template-columns: 1fr; }
+  }
   label {
     display: block;
+    font-size: 0.83rem;
     font-weight: 600;
-    font-size: 0.88rem;
-    margin-bottom: 0.35rem;
-    color: #2d4838;
+    color: var(--court-dark);
+    margin-bottom: 0.3rem;
   }
-  .hint { font-weight: 400; color: #888; font-size: 0.78rem; margin-left: 0.4rem; }
+  .hint { font-weight: 400; color: var(--muted); font-size: 0.76rem; margin-left: 0.4rem; }
   input, select {
     width: 100%;
-    padding: 0.6rem 0.7rem;
+    padding: 0.65rem 0.75rem;
     border: 1.5px solid #d4dcd6;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    border-radius: 10px;
+    font-size: 0.96rem;
     font-family: inherit;
-    background: #f8faf9;
-    transition: border 0.15s;
+    background: #f9fbf9;
+    color: var(--ink);
+    transition: border 0.15s, box-shadow 0.15s;
   }
-  input:focus, select:focus { outline: none; border-color: #1a7d5a; background: #fff; }
-  .units { display: flex; gap: 0.4rem; }
-  .units input { flex: 1; }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--court);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(45,110,62,0.15);
+  }
   button.go {
     width: 100%;
-    padding: 0.95rem;
-    background: linear-gradient(90deg, #0f4c3a, #1a7d5a);
+    padding: 1rem;
+    background: linear-gradient(90deg, var(--court-dark), var(--court));
     color: #fff;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 1.05rem;
     font-weight: 700;
     cursor: pointer;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     letter-spacing: 0.02em;
+    box-shadow: 0 4px 14px rgba(29,78,42,0.35);
+    transition: transform 0.12s, box-shadow 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
   }
-  button.go:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(15,76,58,0.4); }
+  button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(29,78,42,0.45); }
+  button.go svg { width: 22px; height: 22px; }
+
+  /* ───── Results ───── */
   .results { display: none; }
-  .results.show { display: block; }
-  .pick {
-    border: 2px solid #c8e85c;
+  .results.show { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .summary {
+    background: linear-gradient(180deg, #f4faf3, #eaf5e9);
+    border: 1px solid #cfe5d4;
     border-radius: 12px;
+    padding: 0.85rem 1rem;
+    font-size: 0.9rem;
+    color: var(--court-dark);
+    margin-bottom: 1.1rem;
+  }
+  .summary strong { color: var(--court-dark); }
+
+  h2.section-title {
+    font-size: 1.05rem;
+    color: var(--court-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 1.6rem 0 0.7rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+
+  .pick {
+    border: 2px solid #c8e3cd;
+    border-radius: 14px;
     padding: 1.1rem 1.2rem;
-    margin-bottom: 0.7rem;
-    background: linear-gradient(180deg, #fff, #f6fbe5);
+    margin-bottom: 0.85rem;
+    background: #fff;
     position: relative;
   }
-  .pick.gold { border-color: #d4af37; background: linear-gradient(180deg, #fffbe8, #fff5cc); }
-  .rank {
+  .pick.gold {
+    border: 2px solid var(--gold);
+    background: linear-gradient(180deg, #fffbe8, #fffef5);
+    box-shadow: 0 8px 22px rgba(212,175,55,0.18);
+  }
+  .pick .rank {
     position: absolute;
     top: -10px;
     left: 14px;
-    background: #1a7d5a;
+    background: var(--court);
     color: #fff;
-    padding: 0.15rem 0.7rem;
+    padding: 0.2rem 0.75rem;
     border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
   }
-  .pick.gold .rank { background: #d4af37; }
-  .pick h3 { margin: 0.3rem 0 0.2rem; font-size: 1.15rem; }
-  .pick .brand { color: #1a7d5a; font-size: 0.85rem; font-weight: 600; }
-  .pick .specs {
+  .pick.gold .rank { background: var(--gold); color: #4a3500; }
+  .pick .price {
+    float: right;
+    font-weight: 800;
+    color: var(--court-dark);
+    font-size: 1.05rem;
+  }
+  .pick .brand {
+    color: var(--court);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0.2rem 0 0;
+  }
+  .pick h3 {
+    margin: 0.15rem 0 0.5rem;
+    font-size: 1.18rem;
+    color: var(--ink);
+  }
+  .pick h3 .yr { font-weight: 400; color: var(--muted); font-size: 0.85rem; margin-left: 0.3rem; }
+  .specs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem 1rem;
-    margin: 0.6rem 0;
-    font-size: 0.83rem;
-    color: #555;
+    gap: 0.35rem 0.85rem;
+    font-size: 0.82rem;
+    color: #44574b;
+    padding: 0.55rem 0;
+    border-top: 1px dashed #d4dcd6;
+    border-bottom: 1px dashed #d4dcd6;
+    margin: 0.45rem 0;
   }
-  .pick .specs span strong { color: #2d4838; }
-  .pick .why { font-size: 0.88rem; color: #444; margin-top: 0.4rem; }
-  .pick .why .tag {
+  .specs span strong { color: var(--court-dark); }
+
+  .string-row {
+    margin-top: 0.7rem;
+    padding: 0.7rem 0.9rem;
+    background: linear-gradient(90deg, #f0f7f3, #f7faf3);
+    border-left: 3px solid var(--ball-glow);
+    border-radius: 8px;
+    font-size: 0.88rem;
+  }
+  .string-row .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .string-row .name { font-weight: 700; color: var(--court-dark); }
+  .string-row .meta { color: var(--muted); font-size: 0.83rem; margin-top: 0.15rem; }
+  .string-row .grade {
+    display: inline-block;
+    padding: 0.05rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: #e7f3e9; color: var(--court-dark);
+    margin-right: 0.3rem;
+  }
+
+  .tags { margin-top: 0.5rem; }
+  .tag {
     display: inline-block;
     background: #e8f5e9;
-    color: #1a7d5a;
-    padding: 0.1rem 0.5rem;
-    border-radius: 4px;
-    margin: 0.15rem 0.25rem 0 0;
-    font-size: 0.76rem;
+    color: var(--court-dark);
+    padding: 0.18rem 0.55rem;
+    border-radius: 5px;
+    margin: 0.18rem 0.25rem 0 0;
+    font-size: 0.75rem;
     font-weight: 600;
   }
-  .score { float: right; color: #888; font-size: 0.8rem; font-weight: 600; }
-  .summary {
-    background: #f0f7f3;
-    border-left: 3px solid #1a7d5a;
-    padding: 0.7rem 1rem;
-    border-radius: 6px;
-    font-size: 0.88rem;
-    margin-bottom: 1rem;
-    color: #2d4838;
+
+  .buy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+    padding: 0.55rem 1rem;
+    background: var(--court);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: background 0.15s;
   }
+  .buy-btn:hover { background: var(--court-dark); }
+  .buy-btn svg { width: 14px; height: 14px; }
+
+  /* ───── Iconic combos panel ───── */
+  .combo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+  }
+  @media (max-width: 580px) { .combo-grid { grid-template-columns: 1fr; } }
+  .combo {
+    background: linear-gradient(135deg, #fff 0%, #f7faf3 100%);
+    border: 1px solid #d4dcd6;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    font-size: 0.86rem;
+  }
+  .combo .who {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--court);
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+  }
+  .combo .pair { font-weight: 700; color: var(--ink); }
+  .combo .why  { color: var(--muted); font-size: 0.8rem; margin-top: 0.3rem; }
+
+  footer {
+    text-align: center;
+    color: rgba(255,255,255,0.55);
+    font-size: 0.8rem;
+    padding: 2rem 1rem 3rem;
+  }
+  footer a { color: var(--ball-glow); }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>🎾 Tennis Racket Recommender</h1>
-  <p class="subtitle">46 modern rackets · matched to your body, level, and game</p>
 
+<!-- ─── Hero ─── -->
+<header class="hero">
+  <svg class="court-bg" viewBox="0 0 800 350" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="800" height="350" fill="#2d6e3e"/>
+    <rect x="60" y="40" width="680" height="270" fill="none" stroke="#f4f1de" stroke-width="3"/>
+    <line x1="120" y1="40" x2="120" y2="310" stroke="#f4f1de" stroke-width="2"/>
+    <line x1="680" y1="40" x2="680" y2="310" stroke="#f4f1de" stroke-width="2"/>
+    <line x1="220" y1="40" x2="220" y2="310" stroke="#f4f1de" stroke-width="2"/>
+    <line x1="580" y1="40" x2="580" y2="310" stroke="#f4f1de" stroke-width="2"/>
+    <line x1="220" y1="175" x2="580" y2="175" stroke="#f4f1de" stroke-width="2"/>
+    <line x1="60"  y1="175" x2="80"  y2="175" stroke="#f4f1de" stroke-width="2"/>
+    <line x1="720" y1="175" x2="740" y2="175" stroke="#f4f1de" stroke-width="2"/>
+    <line x1="400" y1="40" x2="400" y2="310" stroke="#fff" stroke-width="4" stroke-dasharray="3,4" opacity="0.85"/>
+    <circle cx="290" cy="175" r="10" fill="#d4ee5c" stroke="#fff" stroke-width="1.5"/>
+  </svg>
+
+  <div class="hero-inner">
+    <div class="ball-icon" aria-hidden="true"></div>
+    <h1>Tennis Setup Engine</h1>
+    <p>Find your perfect racket + string combo from 46 frames and 40 strings</p>
+  </div>
+</header>
+
+<main>
   <div class="card">
-    <div class="row">
-      <div>
-        <label>Height <span class="hint">in inches</span></label>
-        <input type="number" id="height" min="48" max="84" value="70" step="1">
+    <fieldset>
+      <legend>About you</legend>
+      <div class="grid-3">
+        <div>
+          <label>Height <span class="hint">in</span></label>
+          <input type="number" id="height" min="48" max="84" value="70" step="1">
+        </div>
+        <div>
+          <label>Weight <span class="hint">lb</span></label>
+          <input type="number" id="weight" min="60" max="350" value="160" step="1">
+        </div>
+        <div>
+          <label>Grip Size</label>
+          <select id="grip">
+            <option value="0">L0 / 4″ — small</option>
+            <option value="1">L1 / 4 ⅛″</option>
+            <option value="2" selected>L2 / 4 ¼″</option>
+            <option value="3">L3 / 4 ⅜″</option>
+            <option value="4">L4 / 4 ½″</option>
+            <option value="5">L5 / 4 ⅝″ — large</option>
+          </select>
+        </div>
       </div>
-      <div>
-        <label>Weight <span class="hint">in lbs</span></label>
-        <input type="number" id="weight" min="60" max="350" value="160" step="1">
-      </div>
-    </div>
+    </fieldset>
 
-    <div class="row">
-      <div>
-        <label>Skill Level</label>
-        <select id="level">
-          <option value="Beginner">Beginner — just starting</option>
-          <option value="Beginner/Intermediate">Beginner / Intermediate</option>
-          <option value="Intermediate" selected>Intermediate — solid rallies</option>
-          <option value="Intermediate/Advanced">Intermediate / Advanced</option>
-          <option value="Advanced">Advanced — full strokes, spin, control</option>
-          <option value="Advanced/Pro">Advanced / Pro</option>
-          <option value="Pro">Pro level</option>
-        </select>
+    <fieldset>
+      <legend>Your game</legend>
+      <div class="grid">
+        <div>
+          <label>Skill Level</label>
+          <select id="level">
+            <option value="Beginner">Beginner — just starting</option>
+            <option value="Beginner/Intermediate">Beginner / Intermediate</option>
+            <option value="Intermediate" selected>Intermediate — solid rallies</option>
+            <option value="Intermediate/Advanced">Intermediate / Advanced</option>
+            <option value="Advanced">Advanced — full strokes, spin, control</option>
+            <option value="Advanced/Pro">Advanced / Pro</option>
+            <option value="Pro">Pro level</option>
+          </select>
+        </div>
+        <div>
+          <label>Swing Speed</label>
+          <select id="swing">
+            <option value="Slow">Slow — short, compact</option>
+            <option value="Slow/Medium">Slow / Medium</option>
+            <option value="Medium" selected>Medium — full extension</option>
+            <option value="Medium/Fast">Medium / Fast</option>
+            <option value="Fast">Fast — long, aggressive</option>
+            <option value="Very Fast">Very Fast — explosive</option>
+          </select>
+        </div>
       </div>
-      <div>
-        <label>Swing Speed</label>
-        <select id="swing">
-          <option value="Slow">Slow — short, compact</option>
-          <option value="Slow/Medium">Slow / Medium</option>
-          <option value="Medium" selected>Medium — full extension</option>
-          <option value="Medium/Fast">Medium / Fast</option>
-          <option value="Fast">Fast — long, aggressive cut</option>
-          <option value="Very Fast">Very Fast — explosive racket head speed</option>
-        </select>
+      <div class="grid" style="margin-top:0.9rem">
+        <div>
+          <label>Game Style</label>
+          <select id="style">
+            <option value="All-Court" selected>All-Court — versatile</option>
+            <option value="Baseliner">Baseliner — rally from back</option>
+            <option value="Aggressive Baseliner">Aggressive Baseliner — big spin/power</option>
+            <option value="Control Baseliner">Control Baseliner — flat, precise</option>
+          </select>
+        </div>
+        <div>
+          <label>Arm-Friendly Frames Only?</label>
+          <select id="arm">
+            <option value="any" selected>No preference</option>
+            <option value="Yes">Yes — comfort matters (tennis elbow, etc)</option>
+          </select>
+        </div>
       </div>
-    </div>
+    </fieldset>
 
-    <div class="row">
-      <div>
-        <label>Game Style</label>
-        <select id="style">
-          <option value="All-Court" selected>All-Court — versatile</option>
-          <option value="Baseliner">Baseliner — rally from back</option>
-          <option value="Aggressive Baseliner">Aggressive Baseliner — big spin/power</option>
-          <option value="Control Baseliner">Control Baseliner — flat, precise</option>
-        </select>
+    <fieldset>
+      <legend>Ratings (optional)</legend>
+      <div class="grid">
+        <div>
+          <label>UTR <span class="hint">1–16.5</span></label>
+          <input type="number" id="utr" min="1" max="16.5" step="0.1" placeholder="e.g. 5.5">
+        </div>
+        <div>
+          <label>USTA Rating <span class="hint">1.0–5.5+</span></label>
+          <input type="number" id="usta" min="1" max="7" step="0.5" placeholder="e.g. 3.5">
+        </div>
       </div>
-      <div>
-        <label>Arm-Friendly Frames Only?</label>
-        <select id="arm">
-          <option value="any" selected>No preference</option>
-          <option value="Yes">Yes — I want comfort (tennis elbow, etc)</option>
-        </select>
-      </div>
-    </div>
+    </fieldset>
 
-    <div class="row">
-      <div>
-        <label>UTR <span class="hint">optional, 1–16.5</span></label>
-        <input type="number" id="utr" min="1" max="16.5" step="0.1" placeholder="e.g. 5.5">
+    <fieldset>
+      <legend>Budget &amp; strings</legend>
+      <div class="grid">
+        <div>
+          <label>Max Racket Price <span class="hint">USD MSRP</span></label>
+          <select id="budget">
+            <option value="999">No limit</option>
+            <option value="200">Under $200</option>
+            <option value="230">Under $230</option>
+            <option value="250" selected>Under $250</option>
+            <option value="270">Under $270</option>
+          </select>
+        </div>
+        <div>
+          <label>String Preference</label>
+          <select id="stringpref">
+            <option value="auto" selected>Recommend automatically</option>
+            <option value="Polyester">Poly — control + spin (durable, harsh)</option>
+            <option value="Multifilament">Multi — comfort + power (soft on arm)</option>
+            <option value="Hybrid">Hybrid — best of both</option>
+            <option value="Natural Gut">Natural Gut — premium feel</option>
+            <option value="Synthetic Gut">Synthetic Gut — beginner all-rounder</option>
+          </select>
+        </div>
       </div>
-      <div>
-        <label>USTA Rating <span class="hint">optional, 1.0–5.5+</span></label>
-        <input type="number" id="usta" min="1" max="7" step="0.5" placeholder="e.g. 3.5">
-      </div>
-    </div>
+    </fieldset>
 
-    <button class="go" onclick="recommend()">Find My Rackets</button>
+    <button class="go" onclick="recommend()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><path d="M3 12 q 9 -9 18 0"/><path d="M3 12 q 9 9 18 0"/>
+      </svg>
+      Find My Setup
+    </button>
   </div>
 
   <div class="results" id="results"></div>
-</div>
+</main>
+
+<footer>
+  Built from <a href="https://github.com/kedarsnd-ai/racket-recommender">tennis_equipment_database.xlsx</a> · 46 rackets · 40 strings · prices are approximate MSRP
+</footer>
 
 <script>
-const RACKETS = [{"Racket_ID":"R001","Brand":"Wilson","Model":"Pro Staff RF97 Autograph","Year":"2023","Weight_Strung_oz":12.5,"Head_Size_sqin":97.0,"Beam_Width_mm":"21.5","Balance_pts":"9 HL","Swingweight":330.0,"Stiffness_RA":67.0,"String_Pattern":"16x19","Frame_Type":"Player's","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast/Very Fast","Play_Style_Fit":"Baseliner/All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R002","Brand":"Wilson","Model":"Pro Staff 97 v14","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":97.0,"Beam_Width_mm":"21.5","Balance_pts":"8 HL","Swingweight":322.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Player's","Skill_Level":"Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Baseliner/All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R003","Brand":"Wilson","Model":"Pro Staff 97L","Year":"2023","Weight_Strung_oz":10.9,"Head_Size_sqin":97.0,"Beam_Width_mm":"21.5","Balance_pts":"4 HL","Swingweight":298.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Player's","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R004","Brand":"Wilson","Model":"Blade 98 v8 (16x19)","Year":"2023","Weight_Strung_oz":11.1,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"5 HL","Swingweight":316.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Control/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court/Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R005","Brand":"Wilson","Model":"Blade 98 v8 (18x20)","Year":"2023","Weight_Strung_oz":11.1,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"5 HL","Swingweight":318.0,"Stiffness_RA":62.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Control Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R006","Brand":"Wilson","Model":"Blade 104 v8","Year":"2023","Weight_Strung_oz":10.7,"Head_Size_sqin":104.0,"Beam_Width_mm":"23","Balance_pts":"1 HL","Swingweight":296.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R007","Brand":"Wilson","Model":"Ultra 100 v4","Year":"2022","Weight_Strung_oz":11.1,"Head_Size_sqin":100.0,"Beam_Width_mm":"24","Balance_pts":"4 HH","Swingweight":320.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Power/Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R008","Brand":"Wilson","Model":"Clash 100 v2","Year":"2022","Weight_Strung_oz":11.3,"Head_Size_sqin":100.0,"Beam_Width_mm":"24","Balance_pts":"4 HL","Swingweight":300.0,"Stiffness_RA":55.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R009","Brand":"Wilson","Model":"Clash 100 Pro v2","Year":"2022","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"23.5","Balance_pts":"1 HH","Swingweight":315.0,"Stiffness_RA":57.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R010","Brand":"Wilson","Model":"Burn 100S v5","Year":"2022","Weight_Strung_oz":11.5,"Head_Size_sqin":100.0,"Beam_Width_mm":"27","Balance_pts":"4 HL","Swingweight":310.0,"Stiffness_RA":68.0,"String_Pattern":"18x16","Frame_Type":"Spin/Power","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R011","Brand":"Babolat","Model":"Pure Drive v12","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"4 HL","Swingweight":330.0,"Stiffness_RA":72.0,"String_Pattern":"16x19","Frame_Type":"Power","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R012","Brand":"Babolat","Model":"Pure Drive+","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"3 HL","Swingweight":335.0,"Stiffness_RA":72.0,"String_Pattern":"16x19","Frame_Type":"Power","Skill_Level":"Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R013","Brand":"Babolat","Model":"Pure Drive 98","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":98.0,"Beam_Width_mm":"25","Balance_pts":"5 HL","Swingweight":325.0,"Stiffness_RA":70.0,"String_Pattern":"16x19","Frame_Type":"Power/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R014","Brand":"Babolat","Model":"Pure Aero v4","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"5 HL","Swingweight":330.0,"Stiffness_RA":71.0,"String_Pattern":"16x19","Frame_Type":"Spin/Power","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R015","Brand":"Babolat","Model":"Pure Aero 98","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":98.0,"Beam_Width_mm":"25","Balance_pts":"7 HL","Swingweight":325.0,"Stiffness_RA":71.0,"String_Pattern":"16x19","Frame_Type":"Spin/Control","Skill_Level":"Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R016","Brand":"Babolat","Model":"Pure Aero+","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"5 HL","Swingweight":335.0,"Stiffness_RA":71.0,"String_Pattern":"16x19","Frame_Type":"Spin/Power","Skill_Level":"Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R017","Brand":"Babolat","Model":"Pure Strike v4 (16x19)","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":99.0,"Beam_Width_mm":"23","Balance_pts":"7 HL","Swingweight":322.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Control/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R018","Brand":"Babolat","Model":"Pure Strike v4 (18x20)","Year":"2023","Weight_Strung_oz":12.0,"Head_Size_sqin":99.0,"Beam_Width_mm":"22","Balance_pts":"9 HL","Swingweight":326.0,"Stiffness_RA":68.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Control Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R019","Brand":"Babolat","Model":"Pure Control Tour","Year":"2023","Weight_Strung_oz":12.0,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"10 HL","Swingweight":328.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R020","Brand":"Head","Model":"Speed MP 2024","Year":"2024","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"23","Balance_pts":"4 HL","Swingweight":315.0,"Stiffness_RA":65.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R021","Brand":"Head","Model":"Speed Pro 2024","Year":"2024","Weight_Strung_oz":12.0,"Head_Size_sqin":100.0,"Beam_Width_mm":"22","Balance_pts":"6 HL","Swingweight":325.0,"Stiffness_RA":63.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court/Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R022","Brand":"Head","Model":"Speed S 2024","Year":"2024","Weight_Strung_oz":11.3,"Head_Size_sqin":102.0,"Beam_Width_mm":"24","Balance_pts":"4 HL","Swingweight":300.0,"Stiffness_RA":65.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R023","Brand":"Head","Model":"Prestige MP 2023","Year":"2023","Weight_Strung_oz":12.0,"Head_Size_sqin":95.0,"Beam_Width_mm":"20","Balance_pts":"9 HL","Swingweight":325.0,"Stiffness_RA":61.0,"String_Pattern":"18x20","Frame_Type":"Player's","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Baseliner/All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R024","Brand":"Head","Model":"Prestige Pro 2023","Year":"2023","Weight_Strung_oz":12.4,"Head_Size_sqin":95.0,"Beam_Width_mm":"19.5","Balance_pts":"11 HL","Swingweight":335.0,"Stiffness_RA":60.0,"String_Pattern":"18x20","Frame_Type":"Player's","Skill_Level":"Pro","Swing_Speed_Fit":"Very Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R025","Brand":"Head","Model":"Radical MP 2023","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"5 HL","Swingweight":315.0,"Stiffness_RA":64.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R026","Brand":"Head","Model":"Extreme MP 2022","Year":"2022","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"3 HL","Swingweight":325.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Spin/Power","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R027","Brand":"Head","Model":"Instinct MP 2022","Year":"2022","Weight_Strung_oz":11.3,"Head_Size_sqin":102.0,"Beam_Width_mm":"24","Balance_pts":"2 HL","Swingweight":300.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Power","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R028","Brand":"Head","Model":"MXG 5","Year":"2021","Weight_Strung_oz":11.3,"Head_Size_sqin":100.0,"Beam_Width_mm":"24","Balance_pts":"4 HL","Swingweight":305.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L5"},{"Racket_ID":"R029","Brand":"Yonex","Model":"EZONE 98 (7th Gen)","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":98.0,"Beam_Width_mm":"23","Balance_pts":"4 HL","Swingweight":315.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2–G4"},{"Racket_ID":"R030","Brand":"Yonex","Model":"EZONE 100 (7th Gen)","Year":"2023","Weight_Strung_oz":11.4,"Head_Size_sqin":100.0,"Beam_Width_mm":"25","Balance_pts":"4 HL","Swingweight":305.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2–G4"},{"Racket_ID":"R031","Brand":"Yonex","Model":"EZONE 98L (7th Gen)","Year":"2023","Weight_Strung_oz":11.1,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"4 HL","Swingweight":295.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2–G4"},{"Racket_ID":"R032","Brand":"Yonex","Model":"VCORE 98 (2023)","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"4 HL","Swingweight":325.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Spin/Control","Skill_Level":"Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"G2–G4"},{"Racket_ID":"R033","Brand":"Yonex","Model":"VCORE 100 (2023)","Year":"2023","Weight_Strung_oz":11.4,"Head_Size_sqin":100.0,"Beam_Width_mm":"23","Balance_pts":"4 HL","Swingweight":310.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Spin/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"G2–G4"},{"Racket_ID":"R034","Brand":"Yonex","Model":"Percept 97 (2023)","Year":"2023","Weight_Strung_oz":12.0,"Head_Size_sqin":97.0,"Beam_Width_mm":"21","Balance_pts":"7 HL","Swingweight":325.0,"Stiffness_RA":59.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2–G4"},{"Racket_ID":"R035","Brand":"Yonex","Model":"Percept 100 (2023)","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"23","Balance_pts":"4 HL","Swingweight":315.0,"Stiffness_RA":60.0,"String_Pattern":"16x19","Frame_Type":"Control/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2–G4"},{"Racket_ID":"R036","Brand":"Prince","Model":"Textreme Beast 100","Year":"2022","Weight_Strung_oz":11.3,"Head_Size_sqin":100.0,"Beam_Width_mm":"25","Balance_pts":"3 HL","Swingweight":308.0,"Stiffness_RA":65.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R037","Brand":"Prince","Model":"Phantom 100X (18x20)","Year":"2022","Weight_Strung_oz":12.0,"Head_Size_sqin":100.0,"Beam_Width_mm":"20","Balance_pts":"8 HL","Swingweight":325.0,"Stiffness_RA":60.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R038","Brand":"Prince","Model":"Phantom 100P (16x18)","Year":"2022","Weight_Strung_oz":12.0,"Head_Size_sqin":100.0,"Beam_Width_mm":"20","Balance_pts":"7 HL","Swingweight":322.0,"Stiffness_RA":60.0,"String_Pattern":"16x18","Frame_Type":"Control","Skill_Level":"Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R039","Brand":"Tecnifibre","Model":"TFight 300 RS","Year":"2022","Weight_Strung_oz":11.1,"Head_Size_sqin":98.0,"Beam_Width_mm":"23","Balance_pts":"5 HL","Swingweight":305.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R040","Brand":"Tecnifibre","Model":"TFight 315 RS","Year":"2022","Weight_Strung_oz":11.6,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"6 HL","Swingweight":318.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Control/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R041","Brand":"Tecnifibre","Model":"TFight 295 RS","Year":"2022","Weight_Strung_oz":10.9,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"4 HL","Swingweight":295.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R042","Brand":"Tecnifibre","Model":"TFlash 300 Speed","Year":"2022","Weight_Strung_oz":11.1,"Head_Size_sqin":100.0,"Beam_Width_mm":"25","Balance_pts":"3 HL","Swingweight":305.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Power/Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1–L4"},{"Racket_ID":"R043","Brand":"Dunlop","Model":"CX 200 (2024)","Year":"2024","Weight_Strung_oz":11.7,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"5 HL","Swingweight":316.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L0–L4"},{"Racket_ID":"R044","Brand":"Dunlop","Model":"CX 200 Tour 18x20","Year":"2024","Weight_Strung_oz":12.0,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"8 HL","Swingweight":322.0,"Stiffness_RA":63.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L0–L4"},{"Racket_ID":"R045","Brand":"Dunlop","Model":"SX 300","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"27","Balance_pts":"4 HL","Swingweight":325.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Spin/Power","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L0–L4"},{"Racket_ID":"R046","Brand":"Dunlop","Model":"FX 500","Year":"2022","Weight_Strung_oz":11.4,"Head_Size_sqin":100.0,"Beam_Width_mm":"24","Balance_pts":"3 HL","Swingweight":308.0,"Stiffness_RA":65.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L0–L4"}];
+const RACKETS = [{"Racket_ID":"R001","Brand":"Wilson","Model":"Pro Staff RF97 Autograph","Year":"2023","Weight_Strung_oz":12.5,"Head_Size_sqin":97.0,"Beam_Width_mm":"21.5","Balance_pts":"9 HL","Swingweight":330.0,"Stiffness_RA":67.0,"String_Pattern":"16x19","Frame_Type":"Player's","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast/Very Fast","Play_Style_Fit":"Baseliner/All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L4","Price_USD":269},{"Racket_ID":"R002","Brand":"Wilson","Model":"Pro Staff 97 v14","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":97.0,"Beam_Width_mm":"21.5","Balance_pts":"8 HL","Swingweight":322.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Player's","Skill_Level":"Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Baseliner/All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L4","Price_USD":249},{"Racket_ID":"R003","Brand":"Wilson","Model":"Pro Staff 97L","Year":"2023","Weight_Strung_oz":10.9,"Head_Size_sqin":97.0,"Beam_Width_mm":"21.5","Balance_pts":"4 HL","Swingweight":298.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Player's","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":219},{"Racket_ID":"R004","Brand":"Wilson","Model":"Blade 98 v8 (16x19)","Year":"2023","Weight_Strung_oz":11.1,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"5 HL","Swingweight":316.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Control/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court/Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":249},{"Racket_ID":"R005","Brand":"Wilson","Model":"Blade 98 v8 (18x20)","Year":"2023","Weight_Strung_oz":11.1,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"5 HL","Swingweight":318.0,"Stiffness_RA":62.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Control Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":249},{"Racket_ID":"R006","Brand":"Wilson","Model":"Blade 104 v8","Year":"2023","Weight_Strung_oz":10.7,"Head_Size_sqin":104.0,"Beam_Width_mm":"23","Balance_pts":"1 HL","Swingweight":296.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":249},{"Racket_ID":"R007","Brand":"Wilson","Model":"Ultra 100 v4","Year":"2022","Weight_Strung_oz":11.1,"Head_Size_sqin":100.0,"Beam_Width_mm":"24","Balance_pts":"4 HH","Swingweight":320.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Power/Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L4","Price_USD":239},{"Racket_ID":"R008","Brand":"Wilson","Model":"Clash 100 v2","Year":"2022","Weight_Strung_oz":11.3,"Head_Size_sqin":100.0,"Beam_Width_mm":"24","Balance_pts":"4 HL","Swingweight":300.0,"Stiffness_RA":55.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":249},{"Racket_ID":"R009","Brand":"Wilson","Model":"Clash 100 Pro v2","Year":"2022","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"23.5","Balance_pts":"1 HH","Swingweight":315.0,"Stiffness_RA":57.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":249},{"Racket_ID":"R010","Brand":"Wilson","Model":"Burn 100S v5","Year":"2022","Weight_Strung_oz":11.5,"Head_Size_sqin":100.0,"Beam_Width_mm":"27","Balance_pts":"4 HL","Swingweight":310.0,"Stiffness_RA":68.0,"String_Pattern":"18x16","Frame_Type":"Spin/Power","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L4","Price_USD":209},{"Racket_ID":"R011","Brand":"Babolat","Model":"Pure Drive v12","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"4 HL","Swingweight":330.0,"Stiffness_RA":72.0,"String_Pattern":"16x19","Frame_Type":"Power","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":239},{"Racket_ID":"R012","Brand":"Babolat","Model":"Pure Drive+","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"3 HL","Swingweight":335.0,"Stiffness_RA":72.0,"String_Pattern":"16x19","Frame_Type":"Power","Skill_Level":"Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":239},{"Racket_ID":"R013","Brand":"Babolat","Model":"Pure Drive 98","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":98.0,"Beam_Width_mm":"25","Balance_pts":"5 HL","Swingweight":325.0,"Stiffness_RA":70.0,"String_Pattern":"16x19","Frame_Type":"Power/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":239},{"Racket_ID":"R014","Brand":"Babolat","Model":"Pure Aero v4","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"5 HL","Swingweight":330.0,"Stiffness_RA":71.0,"String_Pattern":"16x19","Frame_Type":"Spin/Power","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":269},{"Racket_ID":"R015","Brand":"Babolat","Model":"Pure Aero 98","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":98.0,"Beam_Width_mm":"25","Balance_pts":"7 HL","Swingweight":325.0,"Stiffness_RA":71.0,"String_Pattern":"16x19","Frame_Type":"Spin/Control","Skill_Level":"Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":269},{"Racket_ID":"R016","Brand":"Babolat","Model":"Pure Aero+","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"5 HL","Swingweight":335.0,"Stiffness_RA":71.0,"String_Pattern":"16x19","Frame_Type":"Spin/Power","Skill_Level":"Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":269},{"Racket_ID":"R017","Brand":"Babolat","Model":"Pure Strike v4 (16x19)","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":99.0,"Beam_Width_mm":"23","Balance_pts":"7 HL","Swingweight":322.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Control/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":249},{"Racket_ID":"R018","Brand":"Babolat","Model":"Pure Strike v4 (18x20)","Year":"2023","Weight_Strung_oz":12.0,"Head_Size_sqin":99.0,"Beam_Width_mm":"22","Balance_pts":"9 HL","Swingweight":326.0,"Stiffness_RA":68.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Control Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":249},{"Racket_ID":"R019","Brand":"Babolat","Model":"Pure Control Tour","Year":"2023","Weight_Strung_oz":12.0,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"10 HL","Swingweight":328.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":239},{"Racket_ID":"R020","Brand":"Head","Model":"Speed MP 2024","Year":"2024","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"23","Balance_pts":"4 HL","Swingweight":315.0,"Stiffness_RA":65.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L5","Price_USD":249},{"Racket_ID":"R021","Brand":"Head","Model":"Speed Pro 2024","Year":"2024","Weight_Strung_oz":12.0,"Head_Size_sqin":100.0,"Beam_Width_mm":"22","Balance_pts":"6 HL","Swingweight":325.0,"Stiffness_RA":63.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court/Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L5","Price_USD":249},{"Racket_ID":"R022","Brand":"Head","Model":"Speed S 2024","Year":"2024","Weight_Strung_oz":11.3,"Head_Size_sqin":102.0,"Beam_Width_mm":"24","Balance_pts":"4 HL","Swingweight":300.0,"Stiffness_RA":65.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L5","Price_USD":229},{"Racket_ID":"R023","Brand":"Head","Model":"Prestige MP 2023","Year":"2023","Weight_Strung_oz":12.0,"Head_Size_sqin":95.0,"Beam_Width_mm":"20","Balance_pts":"9 HL","Swingweight":325.0,"Stiffness_RA":61.0,"String_Pattern":"18x20","Frame_Type":"Player's","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Baseliner/All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L5","Price_USD":269},{"Racket_ID":"R024","Brand":"Head","Model":"Prestige Pro 2023","Year":"2023","Weight_Strung_oz":12.4,"Head_Size_sqin":95.0,"Beam_Width_mm":"19.5","Balance_pts":"11 HL","Swingweight":335.0,"Stiffness_RA":60.0,"String_Pattern":"18x20","Frame_Type":"Player's","Skill_Level":"Pro","Swing_Speed_Fit":"Very Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L5","Price_USD":269},{"Racket_ID":"R025","Brand":"Head","Model":"Radical MP 2023","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"5 HL","Swingweight":315.0,"Stiffness_RA":64.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L5","Price_USD":239},{"Racket_ID":"R026","Brand":"Head","Model":"Extreme MP 2022","Year":"2022","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"26","Balance_pts":"3 HL","Swingweight":325.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Spin/Power","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":239},{"Racket_ID":"R027","Brand":"Head","Model":"Instinct MP 2022","Year":"2022","Weight_Strung_oz":11.3,"Head_Size_sqin":102.0,"Beam_Width_mm":"24","Balance_pts":"2 HL","Swingweight":300.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Power","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L5","Price_USD":229},{"Racket_ID":"R028","Brand":"Head","Model":"MXG 5","Year":"2021","Weight_Strung_oz":11.3,"Head_Size_sqin":100.0,"Beam_Width_mm":"24","Balance_pts":"4 HL","Swingweight":305.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L5","Price_USD":279},{"Racket_ID":"R029","Brand":"Yonex","Model":"EZONE 98 (7th Gen)","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":98.0,"Beam_Width_mm":"23","Balance_pts":"4 HL","Swingweight":315.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2\u2013G4","Price_USD":269},{"Racket_ID":"R030","Brand":"Yonex","Model":"EZONE 100 (7th Gen)","Year":"2023","Weight_Strung_oz":11.4,"Head_Size_sqin":100.0,"Beam_Width_mm":"25","Balance_pts":"4 HL","Swingweight":305.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2\u2013G4","Price_USD":269},{"Racket_ID":"R031","Brand":"Yonex","Model":"EZONE 98L (7th Gen)","Year":"2023","Weight_Strung_oz":11.1,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"4 HL","Swingweight":295.0,"Stiffness_RA":62.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2\u2013G4","Price_USD":249},{"Racket_ID":"R032","Brand":"Yonex","Model":"VCORE 98 (2023)","Year":"2023","Weight_Strung_oz":11.8,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"4 HL","Swingweight":325.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Spin/Control","Skill_Level":"Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"G2\u2013G4","Price_USD":249},{"Racket_ID":"R033","Brand":"Yonex","Model":"VCORE 100 (2023)","Year":"2023","Weight_Strung_oz":11.4,"Head_Size_sqin":100.0,"Beam_Width_mm":"23","Balance_pts":"4 HL","Swingweight":310.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Spin/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"G2\u2013G4","Price_USD":249},{"Racket_ID":"R034","Brand":"Yonex","Model":"Percept 97 (2023)","Year":"2023","Weight_Strung_oz":12.0,"Head_Size_sqin":97.0,"Beam_Width_mm":"21","Balance_pts":"7 HL","Swingweight":325.0,"Stiffness_RA":59.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2\u2013G4","Price_USD":269},{"Racket_ID":"R035","Brand":"Yonex","Model":"Percept 100 (2023)","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"23","Balance_pts":"4 HL","Swingweight":315.0,"Stiffness_RA":60.0,"String_Pattern":"16x19","Frame_Type":"Control/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"G2\u2013G4","Price_USD":269},{"Racket_ID":"R036","Brand":"Prince","Model":"Textreme Beast 100","Year":"2022","Weight_Strung_oz":11.3,"Head_Size_sqin":100.0,"Beam_Width_mm":"25","Balance_pts":"3 HL","Swingweight":308.0,"Stiffness_RA":65.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":199},{"Racket_ID":"R037","Brand":"Prince","Model":"Phantom 100X (18x20)","Year":"2022","Weight_Strung_oz":12.0,"Head_Size_sqin":100.0,"Beam_Width_mm":"20","Balance_pts":"8 HL","Swingweight":325.0,"Stiffness_RA":60.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Baseliner","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":229},{"Racket_ID":"R038","Brand":"Prince","Model":"Phantom 100P (16x18)","Year":"2022","Weight_Strung_oz":12.0,"Head_Size_sqin":100.0,"Beam_Width_mm":"20","Balance_pts":"7 HL","Swingweight":322.0,"Stiffness_RA":60.0,"String_Pattern":"16x18","Frame_Type":"Control","Skill_Level":"Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":229},{"Racket_ID":"R039","Brand":"Tecnifibre","Model":"TFight 300 RS","Year":"2022","Weight_Strung_oz":11.1,"Head_Size_sqin":98.0,"Beam_Width_mm":"23","Balance_pts":"5 HL","Swingweight":305.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":229},{"Racket_ID":"R040","Brand":"Tecnifibre","Model":"TFight 315 RS","Year":"2022","Weight_Strung_oz":11.6,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"6 HL","Swingweight":318.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Control/Tweener","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":229},{"Racket_ID":"R041","Brand":"Tecnifibre","Model":"TFight 295 RS","Year":"2022","Weight_Strung_oz":10.9,"Head_Size_sqin":98.0,"Beam_Width_mm":"22","Balance_pts":"4 HL","Swingweight":295.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Intermediate","Swing_Speed_Fit":"Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L1\u2013L4","Price_USD":229},{"Racket_ID":"R042","Brand":"Tecnifibre","Model":"TFlash 300 Speed","Year":"2022","Weight_Strung_oz":11.1,"Head_Size_sqin":100.0,"Beam_Width_mm":"25","Balance_pts":"3 HL","Swingweight":305.0,"Stiffness_RA":66.0,"String_Pattern":"16x19","Frame_Type":"Power/Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L1\u2013L4","Price_USD":199},{"Racket_ID":"R043","Brand":"Dunlop","Model":"CX 200 (2024)","Year":"2024","Weight_Strung_oz":11.7,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"5 HL","Swingweight":316.0,"Stiffness_RA":63.0,"String_Pattern":"16x19","Frame_Type":"Control","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Medium/Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L0\u2013L4","Price_USD":239},{"Racket_ID":"R044","Brand":"Dunlop","Model":"CX 200 Tour 18x20","Year":"2024","Weight_Strung_oz":12.0,"Head_Size_sqin":98.0,"Beam_Width_mm":"21","Balance_pts":"8 HL","Swingweight":322.0,"Stiffness_RA":63.0,"String_Pattern":"18x20","Frame_Type":"Control","Skill_Level":"Advanced/Pro","Swing_Speed_Fit":"Fast","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L0\u2013L4","Price_USD":239},{"Racket_ID":"R045","Brand":"Dunlop","Model":"SX 300","Year":"2023","Weight_Strung_oz":11.7,"Head_Size_sqin":100.0,"Beam_Width_mm":"27","Balance_pts":"4 HL","Swingweight":325.0,"Stiffness_RA":68.0,"String_Pattern":"16x19","Frame_Type":"Spin/Power","Skill_Level":"Intermediate/Advanced","Swing_Speed_Fit":"Fast","Play_Style_Fit":"Aggressive Baseliner","Arm_Friendly":"No","Grip_Size_Range":"L0\u2013L4","Price_USD":229},{"Racket_ID":"R046","Brand":"Dunlop","Model":"FX 500","Year":"2022","Weight_Strung_oz":11.4,"Head_Size_sqin":100.0,"Beam_Width_mm":"24","Balance_pts":"3 HL","Swingweight":308.0,"Stiffness_RA":65.0,"String_Pattern":"16x19","Frame_Type":"Tweener","Skill_Level":"Beginner/Intermediate","Swing_Speed_Fit":"Slow/Medium","Play_Style_Fit":"All-Court","Arm_Friendly":"Yes","Grip_Size_Range":"L0\u2013L4","Price_USD":229}];
+const STRINGS = [{"String_ID":"S001","Brand":"Luxilon","Model":"ALU Power 125","String_Type":"Polyester","Gauge_Name":"16L","Gauge_mm":"1.25","Tension_Min_lbs":48.0,"Tension_Max_lbs":56.0,"Stiffness":"Stiff","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Baseliner/All-Court","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Fast/Very Fast"},{"String_ID":"S002","Brand":"Luxilon","Model":"ALU Power Rough 125","String_Type":"Polyester","Gauge_Name":"16L","Gauge_mm":"1.25","Tension_Min_lbs":48.0,"Tension_Max_lbs":56.0,"Stiffness":"Stiff","Spin_Potential":5.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Aggressive Baseliner","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"Fast/Very Fast"},{"String_ID":"S003","Brand":"Luxilon","Model":"ALU Power 130","String_Type":"Polyester","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":48.0,"Tension_Max_lbs":56.0,"Stiffness":"Stiff","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":5.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Baseliner","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"Fast/Very Fast"},{"String_ID":"S004","Brand":"Luxilon","Model":"Element","String_Type":"Polyester","Gauge_Name":"16L","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":54.0,"Stiffness":"Medium","Spin_Potential":3.0,"Power_Level":3.0,"Control_Level":3.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Muted","Best_For_Play_Style":"All-Court","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S005","Brand":"Luxilon","Model":"4G","String_Type":"Polyester","Gauge_Name":"16L","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":54.0,"Stiffness":"Stiff","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":5.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Baseliner","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"Fast"},{"String_ID":"S006","Brand":"Babolat","Model":"RPM Blast","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":55.0,"Stiffness":"Stiff","Spin_Potential":5.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Aggressive Baseliner","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Fast/Very Fast"},{"String_ID":"S007","Brand":"Babolat","Model":"RPM Blast Rough","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":55.0,"Stiffness":"Stiff","Spin_Potential":5.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Aggressive Baseliner","Best_For_Skill":"Advanced","Best_For_Swing_Speed":"Fast/Very Fast"},{"String_ID":"S008","Brand":"Babolat","Model":"RPM Power","String_Type":"Polyester","Gauge_Name":"16L","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":55.0,"Stiffness":"Medium","Spin_Potential":3.0,"Power_Level":4.0,"Control_Level":3.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Lively","Best_For_Play_Style":"Baseliner/All-Court","Best_For_Skill":"Intermediate","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S009","Brand":"Solinco","Model":"Tour Bite","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":54.0,"Stiffness":"Stiff","Spin_Potential":5.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Aggressive Baseliner","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Fast/Very Fast"},{"String_ID":"S010","Brand":"Solinco","Model":"Tour Bite Soft","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":44.0,"Tension_Max_lbs":52.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Muted","Best_For_Play_Style":"Baseliner/All-Court","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S011","Brand":"Solinco","Model":"Hyper-G","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":54.0,"Stiffness":"Stiff","Spin_Potential":5.0,"Power_Level":3.0,"Control_Level":5.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Control Baseliner","Best_For_Skill":"Advanced","Best_For_Swing_Speed":"Fast"},{"String_ID":"S012","Brand":"Solinco","Model":"Vanquish","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":44.0,"Tension_Max_lbs":52.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Muted","Best_For_Play_Style":"All-Court","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S013","Brand":"Head","Model":"Hawk","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":55.0,"Stiffness":"Stiff","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Baseliner","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Fast"},{"String_ID":"S014","Brand":"Head","Model":"Lynx","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":44.0,"Tension_Max_lbs":53.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Muted","Best_For_Play_Style":"All-Court","Best_For_Skill":"Intermediate","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S015","Brand":"Tecnifibre","Model":"Black Code","String_Type":"Polyester","Gauge_Name":"18","Gauge_mm":"1.18","Tension_Min_lbs":44.0,"Tension_Max_lbs":52.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":3.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"All-Court","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S016","Brand":"Tecnifibre","Model":"Black Code 4S","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":54.0,"Stiffness":"Stiff","Spin_Potential":5.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Aggressive Baseliner","Best_For_Skill":"Advanced","Best_For_Swing_Speed":"Fast"},{"String_ID":"S017","Brand":"Wilson","Model":"Revolve","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":54.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Muted","Best_For_Play_Style":"All-Court","Best_For_Skill":"Intermediate","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S018","Brand":"Wilson","Model":"Revolve Spin","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":54.0,"Stiffness":"Medium","Spin_Potential":5.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Muted","Best_For_Play_Style":"Spin Baseliner","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S019","Brand":"Yonex","Model":"Poly Tour Pro","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":44.0,"Tension_Max_lbs":53.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Muted","Best_For_Play_Style":"All-Court","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S020","Brand":"Yonex","Model":"Poly Tour Strike","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":55.0,"Stiffness":"Stiff","Spin_Potential":4.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Baseliner","Best_For_Skill":"Advanced","Best_For_Swing_Speed":"Fast"},{"String_ID":"S021","Brand":"Prince","Model":"Tour XS","String_Type":"Polyester","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":46.0,"Tension_Max_lbs":54.0,"Stiffness":"Medium","Spin_Potential":5.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":4.0,"Arm_Friendly":"No","Feel":"Crisp","Best_For_Play_Style":"Spin Baseliner","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Fast"},{"String_ID":"S022","Brand":"Wilson","Model":"NXT","String_Type":"Multifilament","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":55.0,"Tension_Max_lbs":65.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":4.0,"Control_Level":2.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner/Intermediate","Best_For_Swing_Speed":"Slow/Medium"},{"String_ID":"S023","Brand":"Wilson","Model":"NXT Power","String_Type":"Multifilament","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":5.0,"Control_Level":2.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court/Power","Best_For_Skill":"Beginner","Best_For_Swing_Speed":"Slow"},{"String_ID":"S024","Brand":"Tecnifibre","Model":"X-One Biphase","String_Type":"Multifilament","Gauge_Name":"17","Gauge_mm":"1.24","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":4.0,"Control_Level":3.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner/Intermediate","Best_For_Swing_Speed":"Slow/Medium"},{"String_ID":"S025","Brand":"Tecnifibre","Model":"TGV","String_Type":"Multifilament","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":4.0,"Control_Level":3.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner/Intermediate","Best_For_Swing_Speed":"Slow/Medium"},{"String_ID":"S026","Brand":"Babolat","Model":"Xcel","String_Type":"Multifilament","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":4.0,"Control_Level":2.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner","Best_For_Swing_Speed":"Slow/Medium"},{"String_ID":"S027","Brand":"Babolat","Model":"Xcel Premium","String_Type":"Multifilament","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":50.0,"Tension_Max_lbs":60.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":4.0,"Control_Level":3.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner/Intermediate","Best_For_Swing_Speed":"Slow/Medium"},{"String_ID":"S028","Brand":"Head","Model":"Velocity MLT","String_Type":"Multifilament","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":4.0,"Control_Level":2.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner","Best_For_Swing_Speed":"Slow/Medium"},{"String_ID":"S029","Brand":"Prince","Model":"Premier Control","String_Type":"Multifilament","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":3.0,"Control_Level":4.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"Control","Best_For_Skill":"Beginner/Intermediate","Best_For_Swing_Speed":"Slow/Medium"},{"String_ID":"S030","Brand":"Babolat","Model":"VS Touch Natural Gut","String_Type":"Natural Gut","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":63.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":5.0,"Control_Level":4.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court/Serve-Volley","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"All Speeds"},{"String_ID":"S031","Brand":"Babolat","Model":"VS Team Natural Gut","String_Type":"Natural Gut","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":50.0,"Tension_Max_lbs":60.0,"Stiffness":"Soft","Spin_Potential":3.0,"Power_Level":5.0,"Control_Level":4.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"All Speeds"},{"String_ID":"S032","Brand":"Wilson","Model":"Natural Gut 16","String_Type":"Natural Gut","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":63.0,"Stiffness":"Soft","Spin_Potential":2.0,"Power_Level":5.0,"Control_Level":4.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court/Serve-Volley","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"All Speeds"},{"String_ID":"S033","Brand":"Pacific","Model":"Prime Natural Gut","String_Type":"Natural Gut","Gauge_Name":"17","Gauge_mm":"1.25","Tension_Min_lbs":50.0,"Tension_Max_lbs":60.0,"Stiffness":"Soft","Spin_Potential":3.0,"Power_Level":5.0,"Control_Level":4.0,"Durability":2.0,"Arm_Friendly":"Yes","Feel":"Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"All Speeds"},{"String_ID":"S034","Brand":"Prince","Model":"Synthetic Gut Original","String_Type":"Synthetic Gut","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Medium","Spin_Potential":2.0,"Power_Level":3.0,"Control_Level":3.0,"Durability":3.0,"Arm_Friendly":"Yes","Feel":"Muted","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner","Best_For_Swing_Speed":"Slow/Medium"},{"String_ID":"S035","Brand":"Wilson","Model":"Synthetic Gut Power","String_Type":"Synthetic Gut","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Medium","Spin_Potential":2.0,"Power_Level":4.0,"Control_Level":2.0,"Durability":3.0,"Arm_Friendly":"Yes","Feel":"Muted","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner","Best_For_Swing_Speed":"Slow"},{"String_ID":"S036","Brand":"Head","Model":"FiberGel Power","String_Type":"Synthetic Gut","Gauge_Name":"16","Gauge_mm":"1.30","Tension_Min_lbs":52.0,"Tension_Max_lbs":62.0,"Stiffness":"Medium","Spin_Potential":2.0,"Power_Level":4.0,"Control_Level":2.0,"Durability":3.0,"Arm_Friendly":"Yes","Feel":"Muted","Best_For_Play_Style":"All-Court","Best_For_Skill":"Beginner","Best_For_Swing_Speed":"Slow"},{"String_ID":"S037","Brand":"Babolat/Babolat","Model":"RPM Blast / VS Touch (Hybrid)","String_Type":"Hybrid","Gauge_Name":"16/17","Gauge_mm":"1.25/1.30","Tension_Min_lbs":48.0,"Tension_Max_lbs":56.0,"Stiffness":"Medium","Spin_Potential":5.0,"Power_Level":4.0,"Control_Level":4.0,"Durability":3.0,"Arm_Friendly":"No","Feel":"Crisp/Lively","Best_For_Play_Style":"Aggressive Baseliner/All-Court","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"Fast"},{"String_ID":"S038","Brand":"Luxilon/Wilson","Model":"ALU Power / NXT (Hybrid)","String_Type":"Hybrid","Gauge_Name":"16L/16","Gauge_mm":"1.25/1.30","Tension_Min_lbs":48.0,"Tension_Max_lbs":56.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":4.0,"Control_Level":4.0,"Durability":3.0,"Arm_Friendly":"No","Feel":"Crisp/Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S039","Brand":"Solinco/Wilson","Model":"Tour Bite / NXT (Hybrid)","String_Type":"Hybrid","Gauge_Name":"17/16","Gauge_mm":"1.25/1.30","Tension_Min_lbs":48.0,"Tension_Max_lbs":55.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":4.0,"Control_Level":4.0,"Durability":3.0,"Arm_Friendly":"No","Feel":"Crisp/Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Intermediate/Advanced","Best_For_Swing_Speed":"Medium/Fast"},{"String_ID":"S040","Brand":"Tecnifibre/Babolat","Model":"Black Code / VS Touch (Hybrid)","String_Type":"Hybrid","Gauge_Name":"18/16","Gauge_mm":"1.18/1.30","Tension_Min_lbs":48.0,"Tension_Max_lbs":56.0,"Stiffness":"Medium","Spin_Potential":4.0,"Power_Level":4.0,"Control_Level":4.0,"Durability":3.0,"Arm_Friendly":"No","Feel":"Crisp/Lively","Best_For_Play_Style":"All-Court","Best_For_Skill":"Advanced/Pro","Best_For_Swing_Speed":"Fast"}];
 
-// Ordinal scales for the multi-value tags in the database
-const LEVEL_ORDER  = ["Beginner","Beginner/Intermediate","Intermediate","Intermediate/Advanced","Advanced","Advanced/Pro","Pro"];
-const SWING_ORDER  = ["Slow","Slow/Medium","Medium","Medium/Fast","Fast","Fast/Very Fast","Very Fast"];
+const ICONIC_COMBOS = [
+  { who: "Federer's setup",  pair: "Pro Staff RF97 Autograph + Wilson Natural Gut / Luxilon ALU Power",
+    why: "Heavy player's frame, gut mains for feel, poly crosses for control. Classic touch-game hybrid." },
+  { who: "Nadal's setup",     pair: "Pure Aero + Babolat RPM Blast",
+    why: "Heavy topspin frame matched with the spin-king poly. Built for monster lasso forehands." },
+  { who: "Djokovic-style",    pair: "Speed Pro 2024 + Babolat VS Touch / Head Hawk hybrid",
+    why: "Control frame, gut mains for arm + dwell time, poly crosses for bite and durability." },
+  { who: "Sinner / Alcaraz",  pair: "Pure Aero + Babolat RPM Blast",
+    why: "Modern pro topspin standard — explosive frame plus the most-used pro string on tour." },
+  { who: "Comfort player",    pair: "Wilson Clash 100 + Wilson NXT",
+    why: "The gentlest combo: flexible frame + soft multifilament. Great for tennis elbow." },
+  { who: "Spin baseliner",    pair: "Yonex VCORE 98 + Solinco Hyper-G",
+    why: "Spin-shaped frame + control-poly with great snapback. Spin and shape on every ball." },
+  { who: "Control + feel",    pair: "Wilson Blade 98 + Luxilon ALU Power",
+    why: "The most popular tour combo — predictable response, refined feel, plenty of plow-through." },
+  { who: "Flat-ball striker", pair: "Babolat Pure Strike (18x20) + Solinco Hyper-G",
+    why: "Tighter pattern + control-poly = ropey flat drives. Great for redirection and depth." }
+];
 
-// Pull the min/max ordinal value from a slash-joined tag like "Intermediate/Advanced"
+const LEVEL_ORDER = ["Beginner","Beginner/Intermediate","Intermediate","Intermediate/Advanced","Advanced","Advanced/Pro","Pro"];
+const SWING_ORDER = ["Slow","Slow/Medium","Medium","Medium/Fast","Fast","Fast/Very Fast","Very Fast"];
+
 function rangeOf(tag, order) {
   const parts = (tag || "").split("/").map(s => s.trim());
   const idx = parts.map(p => order.indexOf(p)).filter(i => i >= 0);
   if (!idx.length) return null;
   return [Math.min(...idx), Math.max(...idx)];
 }
-
-// Distance from a player's value to a racket's accepted range; 0 = inside range
 function distanceTo(playerIdx, range) {
   if (!range) return 99;
   if (playerIdx >= range[0] && playerIdx <= range[1]) return 0;
   return Math.min(Math.abs(playerIdx - range[0]), Math.abs(playerIdx - range[1]));
 }
-
-// Use UTR + USTA to nudge the player's level upward when provided (use the highest signal)
 function refineLevelIdx(baseIdx, utr, usta) {
   let idx = baseIdx;
   if (utr && !isNaN(utr)) {
-    let utrIdx;
-    if (utr < 3) utrIdx = 0;
-    else if (utr < 5) utrIdx = 1;
-    else if (utr < 7) utrIdx = 2;
-    else if (utr < 9) utrIdx = 3;
-    else if (utr < 11) utrIdx = 4;
-    else if (utr < 13) utrIdx = 5;
-    else utrIdx = 6;
-    idx = Math.max(idx, utrIdx);
+    const cuts = [3,5,7,9,11,13];
+    let i = cuts.findIndex(c => utr < c);
+    if (i < 0) i = 6;
+    idx = Math.max(idx, i);
   }
   if (usta && !isNaN(usta)) {
-    let ustaIdx;
-    if (usta < 2.5) ustaIdx = 0;
-    else if (usta < 3.0) ustaIdx = 1;
-    else if (usta < 3.5) ustaIdx = 2;
-    else if (usta < 4.0) ustaIdx = 3;
-    else if (usta < 4.5) ustaIdx = 4;
-    else if (usta < 5.0) ustaIdx = 5;
-    else ustaIdx = 6;
-    idx = Math.max(idx, ustaIdx);
+    const cuts = [2.5,3.0,3.5,4.0,4.5,5.0];
+    let i = cuts.findIndex(c => usta < c);
+    if (i < 0) i = 6;
+    idx = Math.max(idx, i);
   }
   return idx;
 }
-
-// Map height (in) + weight (lb) to an ideal strung-weight target in ounces
 function idealRacketWeight(heightIn, weightLb) {
-  const bmi = (weightLb / (heightIn * heightIn)) * 703;
   let target = 11.4;
   if (weightLb < 110) target = 10.8;
   else if (weightLb < 140) target = 11.1;
@@ -263,103 +554,229 @@ function idealRacketWeight(heightIn, weightLb) {
   else target = 11.9;
   if (heightIn >= 74) target += 0.2;
   if (heightIn <= 64) target -= 0.2;
-  if (bmi < 19) target -= 0.1;
   return target;
 }
-
-// Style match: exact = 2, partial overlap (slash list) = 1, otherwise 0
 function styleScore(playerStyle, racketStyle) {
   if (!racketStyle) return 0;
   const parts = racketStyle.split("/").map(s => s.trim());
   if (parts.includes(playerStyle)) return parts.length === 1 ? 2 : 1.5;
-  // Group baseliner-flavored styles together
-  const baseliners = ["Baseliner","Aggressive Baseliner","Control Baseliner"];
+  const baseliners = ["Baseliner","Aggressive Baseliner","Control Baseliner","Spin Baseliner"];
   if (baseliners.includes(playerStyle) && parts.some(p => baseliners.includes(p))) return 1;
   if (playerStyle === "All-Court" && parts.some(p => p.includes("All-Court"))) return 1;
   return 0;
+}
+function gripFits(gripIdx, racketRange) {
+  if (!racketRange) return true;
+  const m = racketRange.match(/[LG](\d).*[LG](\d)/);
+  if (!m) return true;
+  return gripIdx >= +m[1] && gripIdx <= +m[2];
+}
+
+// ── String picking ──
+function preferredStringType(racket, levelIdx, swingIdx, arm, userPref) {
+  if (userPref !== "auto") return userPref;
+  if (arm === "Yes") return "Multifilament";
+  const isPower = (racket.Frame_Type || "").includes("Power");
+  if (isPower && swingIdx <= 2) return "Multifilament";
+  const isControl = ["Control","Player's","Control/Tweener","Spin/Control"].includes(racket.Frame_Type);
+  if (isControl && swingIdx >= 3) return "Polyester";
+  if (racket.Frame_Type === "Spin/Power" || racket.Frame_Type === "Spin/Tweener") return "Polyester";
+  if (levelIdx >= 4) return "Polyester";
+  if (levelIdx <= 1) return "Synthetic Gut";
+  return "Multifilament";
+}
+
+function scoreString(s, racket, levelIdx, swingIdx, style, arm) {
+  const lvlR = rangeOf(s.Best_For_Skill, LEVEL_ORDER);
+  const swR  = rangeOf(s.Best_For_Swing_Speed === "All Speeds" ? "Slow/Very Fast" : s.Best_For_Swing_Speed, SWING_ORDER);
+  const swDist = s.Best_For_Swing_Speed === "All Speeds" ? 0 : distanceTo(swingIdx, swR);
+  const lvlDist = distanceTo(levelIdx, lvlR);
+  if (lvlDist > 1 || swDist > 1) return -1;
+  if (arm === "Yes" && s.Arm_Friendly !== "Yes") return -1;
+
+  let score = 0;
+  score += lvlDist === 0 ? 30 : 12;
+  score += swDist === 0 ? 25 : 10;
+  score += styleScore(style, s.Best_For_Play_Style) * 10;
+  const frame = racket.Frame_Type || "";
+  if (frame.includes("Power") && s.String_Type === "Multifilament") score += 8;
+  if (frame.includes("Control") && s.String_Type === "Polyester") score += 8;
+  if (frame === "Spin/Power" || frame === "Spin/Tweener") {
+    if ((s.Spin_Potential || 0) >= 4) score += 8;
+  }
+  if (style === "Aggressive Baseliner" && (s.Spin_Potential || 0) >= 4) score += 6;
+  if (style === "Control Baseliner" && (s.Control_Level || 0) >= 4) score += 5;
+  if (arm === "Yes" && s.Arm_Friendly === "Yes") score += 6;
+  return score;
+}
+
+function pickString(racket, levelIdx, swingIdx, style, arm, userPref) {
+  const wantType = preferredStringType(racket, levelIdx, swingIdx, arm, userPref);
+  let pool = STRINGS.filter(s => s.String_Type === wantType);
+  if (!pool.length) pool = STRINGS;
+  const scored = pool.map(s => ({ s, score: scoreString(s, racket, levelIdx, swingIdx, style, arm) }))
+                      .filter(x => x.score >= 0)
+                      .sort((a, b) => b.score - a.score);
+  if (scored.length) return scored[0].s;
+  const any = STRINGS.map(s => ({ s, score: scoreString(s, racket, levelIdx, swingIdx, style, arm) }))
+                     .filter(x => x.score >= 0)
+                     .sort((a, b) => b.score - a.score);
+  return any[0]?.s || null;
+}
+
+function recommendedTension(string, racket) {
+  const mid = (string.Tension_Min_lbs + string.Tension_Max_lbs) / 2;
+  let adj = 0;
+  if (racket.Stiffness_RA >= 70) adj -= 2;
+  if (racket.Stiffness_RA <= 62) adj += 1;
+  return Math.round(mid + adj);
+}
+
+function buyURL(brand, model) {
+  const q = encodeURIComponent((brand + " " + model).replace(/[()]/g," ").trim());
+  return `https://www.tennis-warehouse.com/searchresults.html?keyword=${q}`;
+}
+function buyStringURL(brand, model) {
+  const q = encodeURIComponent((brand + " " + model).replace(/[()/]/g," ").trim());
+  return `https://www.tennis-warehouse.com/searchresults.html?keyword=${q}`;
 }
 
 function recommend() {
   const heightIn = parseFloat(document.getElementById("height").value);
   const weightLb = parseFloat(document.getElementById("weight").value);
-  const level   = document.getElementById("level").value;
-  const swing   = document.getElementById("swing").value;
-  const style   = document.getElementById("style").value;
-  const arm     = document.getElementById("arm").value;
-  const utr     = parseFloat(document.getElementById("utr").value);
-  const usta    = parseFloat(document.getElementById("usta").value);
+  const gripIdx  = +document.getElementById("grip").value;
+  const level    = document.getElementById("level").value;
+  const swing    = document.getElementById("swing").value;
+  const style    = document.getElementById("style").value;
+  const arm      = document.getElementById("arm").value;
+  const utr      = parseFloat(document.getElementById("utr").value);
+  const usta     = parseFloat(document.getElementById("usta").value);
+  const budget   = +document.getElementById("budget").value;
+  const stringPref = document.getElementById("stringpref").value;
 
-  const baseLevelIdx = LEVEL_ORDER.indexOf(level);
-  const playerLevelIdx = refineLevelIdx(baseLevelIdx, utr, usta);
+  const playerLevelIdx = refineLevelIdx(LEVEL_ORDER.indexOf(level), utr, usta);
   const playerSwingIdx = SWING_ORDER.indexOf(swing);
   const targetWeight = idealRacketWeight(heightIn, weightLb);
 
   const scored = RACKETS.map(r => {
-    const lvlRange = rangeOf(r.Skill_Level, LEVEL_ORDER);
-    const swRange  = rangeOf(r.Swing_Speed_Fit, SWING_ORDER);
-    const lvlDist = distanceTo(playerLevelIdx, lvlRange);
-    const swDist  = distanceTo(playerSwingIdx, swRange);
-
-    // Hard filters: skip rackets clearly above or below player's level/swing
+    if (r.Price_USD > budget) return null;
+    if (!gripFits(gripIdx, r.Grip_Size_Range)) return null;
+    const lvlR = rangeOf(r.Skill_Level, LEVEL_ORDER);
+    const swR  = rangeOf(r.Swing_Speed_Fit, SWING_ORDER);
+    const lvlDist = distanceTo(playerLevelIdx, lvlR);
+    const swDist  = distanceTo(playerSwingIdx, swR);
     if (lvlDist > 1 || swDist > 1) return null;
     if (arm === "Yes" && r.Arm_Friendly !== "Yes") return null;
 
     const lvlPts   = lvlDist === 0 ? 35 : 18;
     const swPts    = swDist === 0 ? 25 : 12;
-    const stylePts = styleScore(style, r.Play_Style_Fit) * 12; // up to 24
+    const stylePts = styleScore(style, r.Play_Style_Fit) * 12;
     const wDelta   = Math.abs(r.Weight_Strung_oz - targetWeight);
-    const wPts     = Math.max(0, 14 - wDelta * 14); // closer = better
+    const wPts     = Math.max(0, 14 - wDelta * 14);
     const armPts   = (r.Arm_Friendly === "Yes") ? 2 : 0;
-
     const score = lvlPts + swPts + stylePts + wPts + armPts;
 
     const tags = [];
     if (lvlDist === 0) tags.push("✓ matches your level");
-    if (swDist === 0) tags.push("✓ matches your swing speed");
+    if (swDist === 0)  tags.push("✓ matches your swing");
     if (stylePts >= 18) tags.push("✓ ideal for your style");
     else if (stylePts >= 12) tags.push("· compatible style");
     if (wDelta < 0.3) tags.push(`✓ weight fits (${r.Weight_Strung_oz.toFixed(1)}oz)`);
     if (r.Arm_Friendly === "Yes") tags.push("· arm-friendly");
 
-    return { r, score, tags, wDelta };
-  }).filter(Boolean).sort((a,b) => b.score - a.score);
+    return { r, score, tags };
+  }).filter(Boolean).sort((a, b) => b.score - a.score);
 
   const top = scored.slice(0, 5);
   const out = document.getElementById("results");
   out.classList.add("show");
 
   if (!top.length) {
-    out.innerHTML = `<div class="card"><h3>No matches</h3>
-      <p>None of the rackets fit those constraints. Try widening the level/swing speed.</p></div>`;
+    out.innerHTML = `<div class="card">
+      <h3 style="margin-top:0">No matches</h3>
+      <p>No frames fit those constraints. Try raising the budget, widening your grip range, or relaxing the arm-friendly filter.</p>
+    </div>`;
+    out.scrollIntoView({behavior:"smooth", block:"start"});
     return;
   }
 
+  top.forEach(m => {
+    const s = pickString(m.r, playerLevelIdx, playerSwingIdx, style, arm, stringPref);
+    m.string = s;
+    m.tension = s ? recommendedTension(s, m.r) : null;
+  });
+
   const summary = `
     <div class="summary">
-      <strong>Your profile:</strong> ${level}${utr?` · UTR ${utr}`:""}${usta?` · USTA ${usta}`:""} ·
-      ${swing} swing · ${style} · target frame weight <strong>${targetWeight.toFixed(1)} oz</strong>
+      <strong>Profile:</strong> ${level}${utr?` · UTR ${utr}`:""}${usta?` · USTA ${usta}`:""}
+      · ${swing} swing · ${style}
+      · grip L${gripIdx}
+      · target weight <strong>${targetWeight.toFixed(1)} oz</strong>
+      · budget &le; ${budget === 999 ? "no limit" : "$"+budget}
     </div>`;
 
-  const cards = top.map((m, i) => `
+  const cards = top.map((m, i) => {
+    const r = m.r, s = m.string;
+    const stringBlock = s ? `
+      <div class="string-row">
+        <div class="label">Recommended string</div>
+        <div><span class="grade">${s.String_Type}</span><span class="name">${s.Brand} ${s.Model}</span></div>
+        <div class="meta">
+          ${s.Gauge_Name} gauge · ${s.Gauge_mm} mm · tension <strong>${m.tension} lb</strong>
+          (range ${s.Tension_Min_lbs}–${s.Tension_Max_lbs})
+          · spin ${s.Spin_Potential}/5 · power ${s.Power_Level}/5 · control ${s.Control_Level}/5
+          ${s.Arm_Friendly === "Yes" ? " · arm-friendly" : ""}
+        </div>
+        <a class="buy-btn" href="${buyStringURL(s.Brand, s.Model)}" target="_blank" rel="noopener">
+          Find string
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17 17 7"/><path d="M8 7 h9 v9"/></svg>
+        </a>
+      </div>` : `<div class="string-row"><div class="label">String</div><div class="meta">No matching string in DB.</div></div>`;
+
+    return `
     <div class="pick ${i === 0 ? "gold" : ""}">
-      <span class="rank">${i === 0 ? "★ TOP PICK" : "#" + (i+1)}</span>
-      <span class="score">match ${Math.round(m.score)}</span>
-      <div class="brand">${m.r.Brand}</div>
-      <h3>${m.r.Model} <span style="color:#888;font-weight:400;font-size:0.85rem">(${m.r.Year})</span></h3>
+      <span class="rank">${i === 0 ? "★ TOP COMBO" : "#" + (i+1)}</span>
+      <span class="price">$${r.Price_USD}</span>
+      <div class="brand">${r.Brand}</div>
+      <h3>${r.Model} <span class="yr">(${r.Year})</span></h3>
       <div class="specs">
-        <span><strong>${m.r.Weight_Strung_oz.toFixed(1)} oz</strong> strung</span>
-        <span>${m.r.Head_Size_sqin}″ head</span>
-        <span>${m.r.String_Pattern}</span>
-        <span>${m.r.Balance_pts}</span>
-        <span>SW ${m.r.Swingweight}</span>
-        <span>RA ${m.r.Stiffness_RA}</span>
-        <span>${m.r.Frame_Type}</span>
+        <span><strong>${r.Weight_Strung_oz.toFixed(1)} oz</strong> strung</span>
+        <span>${r.Head_Size_sqin}″ head</span>
+        <span>${r.String_Pattern}</span>
+        <span>${r.Balance_pts}</span>
+        <span>SW ${r.Swingweight}</span>
+        <span>RA ${r.Stiffness_RA}</span>
+        <span>${r.Frame_Type}</span>
+        <span>grips ${r.Grip_Size_Range}</span>
       </div>
-      <div class="why">${m.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      <div class="tags">${m.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      ${stringBlock}
+      <a class="buy-btn" href="${buyURL(r.Brand, r.Model)}" target="_blank" rel="noopener">
+        Find this racket
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17 17 7"/><path d="M8 7 h9 v9"/></svg>
+      </a>
+    </div>`;
+  }).join("");
+
+  const combos = ICONIC_COMBOS.map(c => `
+    <div class="combo">
+      <div class="who">${c.who}</div>
+      <div class="pair">${c.pair}</div>
+      <div class="why">${c.why}</div>
     </div>`).join("");
 
-  out.innerHTML = `<div class="card">${summary}<h2 style="margin:0 0 1rem">Top 5 picks for you</h2>${cards}</div>`;
+  out.innerHTML = `
+    <div class="card">
+      ${summary}
+      <h2 class="section-title">Your top setups</h2>
+      ${cards}
+      <h2 class="section-title">Iconic pro combos</h2>
+      <div class="combo-grid">${combos}</div>
+    </div>`;
+
+  out.scrollIntoView({behavior:"smooth", block:"start"});
 }
 </script>
+
 </body>
 </html>
