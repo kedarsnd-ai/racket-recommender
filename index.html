@@ -92,6 +92,39 @@
   .ball-icon::before { inset: -3px 25%; transform: rotate(-15deg); border-color: transparent rgba(255,255,255,0.85); }
   .ball-icon::after  { inset: 25% -3px; transform: rotate(-15deg); border-color: rgba(255,255,255,0.85) transparent; }
 
+  /* ───── Player count chip ───── */
+  .player-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.95rem;
+    padding: 0.4rem 0.85rem 0.4rem 0.7rem;
+    background: rgba(255,255,255,0.95);
+    color: var(--court-dark);
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1.5px solid var(--ball);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    animation: counterIn 0.5s ease;
+  }
+  .player-counter strong { color: var(--court); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .counter-pulse {
+    width: 8px; height: 8px;
+    background: var(--ball);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(212,238,92,0.8);
+    animation: pulseRing 1.8s ease-out infinite;
+  }
+  .player-counter.bumped { animation: bump 0.45s ease; }
+  @keyframes pulseRing {
+    0%   { box-shadow: 0 0 0 0 rgba(212,238,92,0.7); }
+    70%  { box-shadow: 0 0 0 8px rgba(212,238,92,0); }
+    100% { box-shadow: 0 0 0 0 rgba(212,238,92,0); }
+  }
+  @keyframes counterIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  @keyframes bump { 0%,100% { transform: scale(1); } 35% { transform: scale(1.08); } }
+
   /* ───── Form card ───── */
   main {
     max-width: 880px;
@@ -619,6 +652,10 @@
     <div class="ball-icon" aria-hidden="true"></div>
     <h1>Racket IQ</h1>
     <p>Find your perfect racket + string combo</p>
+    <div class="player-counter" id="player-counter" hidden>
+      <span class="counter-pulse"></span>
+      <span class="counter-text">Used by <strong id="player-count">…</strong> <span id="player-suffix">players</span></span>
+    </div>
   </div>
 </header>
 
@@ -1200,8 +1237,50 @@ function copyShareLink(btn) {
   });
 }
 
-// On page load, populate form from URL hash and auto-run
+// ───────── Player counter (Abacus public counter API) ─────────
+const COUNTER_URL = "https://abacus.jasoncameron.dev";
+const COUNTER_NS  = "racket-iq";
+const COUNTER_KEY = "finds";
+
+function renderCounter(n) {
+  const wrap = document.getElementById("player-counter");
+  if (!wrap || typeof n !== "number") return;
+  document.getElementById("player-count").textContent = n.toLocaleString();
+  document.getElementById("player-suffix").textContent = (n === 1) ? "player" : "players";
+  wrap.hidden = false;
+}
+
+async function loadCounter() {
+  try {
+    const r = await fetch(`${COUNTER_URL}/get/${COUNTER_NS}/${COUNTER_KEY}`);
+    if (!r.ok) {
+      // 404 = counter doesn't exist yet — that's fine, it'll appear on the first /hit
+      if (r.status === 404) renderCounter(0);
+      return;
+    }
+    const data = await r.json();
+    renderCounter(data.value);
+  } catch { /* offline or blocked — silently skip */ }
+}
+
+async function bumpCounter() {
+  try {
+    const r = await fetch(`${COUNTER_URL}/hit/${COUNTER_NS}/${COUNTER_KEY}`);
+    if (!r.ok) return;
+    const data = await r.json();
+    renderCounter(data.value);
+    const wrap = document.getElementById("player-counter");
+    if (wrap) {
+      wrap.classList.remove("bumped");
+      void wrap.offsetWidth;       // restart the bump animation
+      wrap.classList.add("bumped");
+    }
+  } catch { /* silently swallow */ }
+}
+
+// On page load, populate form from URL hash, auto-run if present, fetch counter
 window.addEventListener("DOMContentLoaded", () => {
+  loadCounter();
   if (!location.hash) return;
   const params = new URLSearchParams(location.hash.slice(1));
   let ran = false;
@@ -1575,6 +1654,9 @@ function recommend() {
     </div>`;
 
   out.scrollIntoView({behavior:"smooth", block:"start"});
+
+  // Increment the public "Used by N players" counter (fire-and-forget)
+  bumpCounter();
 }
 </script>
 
