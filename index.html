@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tennis Setup Engine — Racket + String Recommender</title>
+<title>Racket IQ — Find your perfect racket + string combo</title>
 <style>
   :root {
     --court: #2d6e3e;
@@ -124,7 +124,7 @@
     margin-bottom: 0.3rem;
   }
   .hint { font-weight: 400; color: var(--muted); font-size: 0.76rem; margin-left: 0.4rem; }
-  input, select {
+  input, select, textarea {
     width: 100%;
     padding: 0.65rem 0.75rem;
     border: 1.5px solid #d4dcd6;
@@ -134,8 +134,10 @@
     background: #f9fbf9;
     color: var(--ink);
     transition: border 0.15s, box-shadow 0.15s;
+    resize: vertical;
   }
-  input:focus, select:focus {
+  textarea { font-size: 0.9rem; min-height: 60px; }
+  input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--court);
     background: #fff;
@@ -328,6 +330,57 @@
   .combo .pair { font-weight: 700; color: var(--ink); }
   .combo .why  { color: var(--muted); font-size: 0.8rem; margin-top: 0.3rem; }
 
+  /* ───── Grand Slam badges ───── */
+  .slams {
+    max-width: 880px;
+    margin: 1rem auto 0;
+    padding: 0 1rem;
+  }
+  .slam-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+  }
+  @media (max-width: 640px) { .slam-row { grid-template-columns: 1fr 1fr; } }
+  .slam {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.78rem;
+    line-height: 1.15;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  }
+  .slam strong { display: block; font-size: 0.88rem; font-weight: 800; letter-spacing: 0.01em; }
+  .slam span   { font-size: 0.7rem; opacity: 0.85; }
+  .slam-ball {
+    width: 22px; height: 22px; flex: 0 0 22px;
+    border-radius: 50%;
+    box-shadow: inset -3px -3px 5px rgba(0,0,0,0.18);
+    position: relative;
+  }
+  .slam-ball::before, .slam-ball::after {
+    content: ""; position: absolute; inset: -1px 25%;
+    border: 1px solid rgba(255,255,255,0.7); border-radius: 50%;
+    border-color: transparent rgba(255,255,255,0.7);
+    transform: rotate(-15deg);
+  }
+  .slam-ball::after { inset: 25% -1px; border-color: rgba(255,255,255,0.7) transparent; }
+  /* AO — hard-court blue */
+  .slam.ao { background: linear-gradient(135deg, #003e80 0%, #1f6fc4 100%); }
+  .slam.ao .slam-ball { background: radial-gradient(circle at 35% 30%, #f5ff9e, #d4ee5c 60%, #97b540); }
+  /* Roland-Garros — terre battue (clay) */
+  .slam.rg { background: linear-gradient(135deg, #c2462c 0%, #e07a4f 100%); }
+  .slam.rg .slam-ball { background: radial-gradient(circle at 35% 30%, #f5ff9e, #d4ee5c 60%, #97b540); }
+  /* Wimbledon — green + purple */
+  .slam.wb { background: linear-gradient(135deg, #00543c 0%, #4d2961 100%); }
+  .slam.wb .slam-ball { background: radial-gradient(circle at 35% 30%, #fff, #fafafa 60%, #d8d8d8); }
+  /* US Open — navy + court blue */
+  .slam.us { background: linear-gradient(135deg, #002060 0%, #2b6cb0 100%); }
+  .slam.us .slam-ball { background: radial-gradient(circle at 35% 30%, #f5ff9e, #d4ee5c 60%, #97b540); }
+
   footer {
     text-align: center;
     color: rgba(255,255,255,0.55);
@@ -357,8 +410,8 @@
 
   <div class="hero-inner">
     <div class="ball-icon" aria-hidden="true"></div>
-    <h1>Tennis Setup Engine</h1>
-    <p>Find your perfect racket + string combo from 46 frames and 40 strings</p>
+    <h1>Racket IQ</h1>
+    <p>Find your perfect racket + string combo</p>
   </div>
 </header>
 
@@ -424,8 +477,20 @@
             <option value="Baseliner">Baseliner — rally from back</option>
             <option value="Aggressive Baseliner">Aggressive Baseliner — big spin/power</option>
             <option value="Control Baseliner">Control Baseliner — flat, precise</option>
+            <option value="Serve-Volley">Serve + Volley — attack the net</option>
           </select>
         </div>
+        <div>
+          <label>Volley Skill</label>
+          <select id="volley">
+            <option value="1">Weak — avoid the net</option>
+            <option value="2" selected>Developing — sometimes</option>
+            <option value="3">Solid — comfortable closing</option>
+            <option value="4">Strong — finish at net often</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:0.9rem">
         <div>
           <label>Arm-Friendly Frames Only?</label>
           <select id="arm">
@@ -433,6 +498,7 @@
             <option value="Yes">Yes — comfort matters (tennis elbow, etc)</option>
           </select>
         </div>
+        <div></div>
       </div>
     </fieldset>
 
@@ -477,6 +543,11 @@
       </div>
     </fieldset>
 
+    <fieldset>
+      <legend>Other notes <span class="hint" style="text-transform:none;letter-spacing:0">optional — anything specific?</span></legend>
+      <textarea id="notes" rows="2" placeholder="e.g. ‘I want more spin and a lighter frame’ · ‘tennis elbow, need comfort’ · ‘prefer Yonex’ · ‘flat hitter, control matters’ · ‘great touch at net’"></textarea>
+    </fieldset>
+
     <button class="go" onclick="recommend()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="9"/><path d="M3 12 q 9 -9 18 0"/><path d="M3 12 q 9 9 18 0"/>
@@ -488,8 +559,29 @@
   <div class="results" id="results"></div>
 </main>
 
+<section class="slams" aria-label="Grand Slam tournaments">
+  <div class="slam-row">
+    <div class="slam ao" title="Australian Open · Hard court">
+      <div class="slam-ball"></div>
+      <div class="slam-text"><strong>Australian Open</strong><span>Melbourne · January</span></div>
+    </div>
+    <div class="slam rg" title="Roland-Garros · Clay">
+      <div class="slam-ball"></div>
+      <div class="slam-text"><strong>Roland-Garros</strong><span>Paris · May–June</span></div>
+    </div>
+    <div class="slam wb" title="Wimbledon · Grass">
+      <div class="slam-ball"></div>
+      <div class="slam-text"><strong>Wimbledon</strong><span>London · June–July</span></div>
+    </div>
+    <div class="slam us" title="US Open · Hard court">
+      <div class="slam-ball"></div>
+      <div class="slam-text"><strong>US Open</strong><span>New York · August–September</span></div>
+    </div>
+  </div>
+</section>
+
 <footer>
-  Built from <a href="https://github.com/kedarsnd-ai/racket-recommender">tennis_equipment_database.xlsx</a> · 46 rackets · 40 strings · prices are approximate MSRP
+  Built from <a href="https://github.com/kedarsnd-ai/racket-recommender">tennis_equipment_database.xlsx</a> · prices are approximate MSRP
 </footer>
 
 <script>
@@ -563,6 +655,11 @@ function styleScore(playerStyle, racketStyle) {
   const baseliners = ["Baseliner","Aggressive Baseliner","Control Baseliner","Spin Baseliner"];
   if (baseliners.includes(playerStyle) && parts.some(p => baseliners.includes(p))) return 1;
   if (playerStyle === "All-Court" && parts.some(p => p.includes("All-Court"))) return 1;
+  // Serve-Volley overlaps strongly with All-Court frames
+  if (playerStyle === "Serve-Volley") {
+    if (parts.some(p => p === "Serve-Volley")) return 2;
+    if (parts.some(p => p.includes("All-Court"))) return 1.5;
+  }
   return 0;
 }
 function gripFits(gripIdx, racketRange) {
@@ -632,13 +729,41 @@ function recommendedTension(string, racket) {
   return Math.round(mid + adj);
 }
 
+// Google Shopping lands directly on the actual product across merchants
 function buyURL(brand, model) {
-  const q = encodeURIComponent((brand + " " + model).replace(/[()]/g," ").trim());
-  return `https://www.tennis-warehouse.com/searchresults.html?keyword=${q}`;
+  const q = encodeURIComponent((brand + " " + model + " tennis racquet").replace(/[()]/g," ").replace(/\s+/g," ").trim());
+  return `https://www.google.com/search?tbm=shop&q=${q}`;
 }
 function buyStringURL(brand, model) {
-  const q = encodeURIComponent((brand + " " + model).replace(/[()/]/g," ").trim());
-  return `https://www.tennis-warehouse.com/searchresults.html?keyword=${q}`;
+  const q = encodeURIComponent((brand + " " + model + " tennis string").replace(/[()/]/g," ").replace(/\s+/g," ").trim());
+  return `https://www.google.com/search?tbm=shop&q=${q}`;
+}
+
+// Parse the "other notes" textarea into score adjustments
+function parseNotes(text) {
+  const t = (text || "").toLowerCase();
+  const adj = {
+    weightDelta: 0,         // shift target weight in oz
+    forceArmFriendly: false,
+    budgetCap: null,
+    boostFrame: {},         // frame-type substring -> bonus pts
+    brandPref: null,        // brand string
+    extraTags: []
+  };
+  const has = w => t.includes(w);
+  if (has("spin") || has("topspin")) { adj.boostFrame["Spin"] = 12; adj.extraTags.push("notes: more spin"); }
+  if (has("more power") || (has("power") && !has("control"))) { adj.boostFrame["Power"] = 12; adj.extraTags.push("notes: more power"); }
+  if (has("control") || has("precision") || has("flat")) { adj.boostFrame["Control"] = 12; adj.extraTags.push("notes: more control"); }
+  if (has("comfort") || has("elbow") || has("arm") || has("shoulder") || has("injury")) { adj.forceArmFriendly = true; adj.extraTags.push("notes: arm comfort"); }
+  if (has("lighter") || has("light frame") || has("light racket")) { adj.weightDelta -= 0.4; adj.extraTags.push("notes: lighter"); }
+  if (has("heavier") || has("heavy frame")) { adj.weightDelta += 0.4; adj.extraTags.push("notes: heavier"); }
+  if (has("feel") || has("touch")) { adj.boostFrame["Player's"] = 8; adj.extraTags.push("notes: touch + feel"); }
+  if (has("serve") || has("volley") || has("net")) { adj.boostFrame["Control"] = (adj.boostFrame["Control"]||0) + 4; adj.extraTags.push("notes: serve/net play"); }
+  if (has("cheap") || has("budget") || has("affordable")) { adj.budgetCap = 220; adj.extraTags.push("notes: budget"); }
+  ["wilson","babolat","head","yonex","prince","tecnifibre","dunlop","luxilon","solinco"].forEach(b => {
+    if (has(b)) { adj.brandPref = b; adj.extraTags.push(`notes: prefer ${b}`); }
+  });
+  return adj;
 }
 
 function recommend() {
@@ -648,15 +773,22 @@ function recommend() {
   const level    = document.getElementById("level").value;
   const swing    = document.getElementById("swing").value;
   const style    = document.getElementById("style").value;
-  const arm      = document.getElementById("arm").value;
+  const volley   = +document.getElementById("volley").value;
+  let   arm      = document.getElementById("arm").value;
   const utr      = parseFloat(document.getElementById("utr").value);
   const usta     = parseFloat(document.getElementById("usta").value);
-  const budget   = +document.getElementById("budget").value;
+  let   budget   = +document.getElementById("budget").value;
   const stringPref = document.getElementById("stringpref").value;
+  const notesText  = document.getElementById("notes").value;
+
+  // Parse free-text notes into adjustments
+  const notes = parseNotes(notesText);
+  if (notes.forceArmFriendly) arm = "Yes";
+  if (notes.budgetCap && notes.budgetCap < budget) budget = notes.budgetCap;
 
   const playerLevelIdx = refineLevelIdx(LEVEL_ORDER.indexOf(level), utr, usta);
   const playerSwingIdx = SWING_ORDER.indexOf(swing);
-  const targetWeight = idealRacketWeight(heightIn, weightLb);
+  const targetWeight = idealRacketWeight(heightIn, weightLb) + notes.weightDelta;
 
   const scored = RACKETS.map(r => {
     if (r.Price_USD > budget) return null;
@@ -674,7 +806,26 @@ function recommend() {
     const wDelta   = Math.abs(r.Weight_Strung_oz - targetWeight);
     const wPts     = Math.max(0, 14 - wDelta * 14);
     const armPts   = (r.Arm_Friendly === "Yes") ? 2 : 0;
-    const score = lvlPts + swPts + stylePts + wPts + armPts;
+
+    // Volley skill: high volley → bonus for head-light + maneuverable frames
+    let volleyPts = 0;
+    if (volley >= 3) {
+      const balPts = (r.Balance_pts || "").match(/(\d+)\s*HL/);
+      const hl = balPts ? +balPts[1] : 0;
+      if (hl >= 6) volleyPts += 5;        // head-light = better at net
+      if (r.Swingweight && r.Swingweight <= 320) volleyPts += 4;
+      if (style === "Serve-Volley") volleyPts += 4;
+    }
+
+    // Notes: frame-type bonus
+    let noteFramePts = 0;
+    for (const k of Object.keys(notes.boostFrame)) {
+      if ((r.Frame_Type || "").includes(k)) noteFramePts += notes.boostFrame[k];
+    }
+    let brandPts = 0;
+    if (notes.brandPref && r.Brand.toLowerCase() === notes.brandPref) brandPts = 10;
+
+    const score = lvlPts + swPts + stylePts + wPts + armPts + volleyPts + noteFramePts + brandPts;
 
     const tags = [];
     if (lvlDist === 0) tags.push("✓ matches your level");
@@ -683,6 +834,9 @@ function recommend() {
     else if (stylePts >= 12) tags.push("· compatible style");
     if (wDelta < 0.3) tags.push(`✓ weight fits (${r.Weight_Strung_oz.toFixed(1)}oz)`);
     if (r.Arm_Friendly === "Yes") tags.push("· arm-friendly");
+    if (volleyPts >= 8) tags.push("✓ great at net");
+    if (brandPts) tags.push(`✓ ${notes.brandPref} brand`);
+    notes.extraTags.forEach(t => tags.push(t));
 
     return { r, score, tags };
   }).filter(Boolean).sort((a, b) => b.score - a.score);
@@ -706,13 +860,16 @@ function recommend() {
     m.tension = s ? recommendedTension(s, m.r) : null;
   });
 
+  const volleyLabel = ["","weak","developing","solid","strong"][volley] || "developing";
   const summary = `
     <div class="summary">
       <strong>Profile:</strong> ${level}${utr?` · UTR ${utr}`:""}${usta?` · USTA ${usta}`:""}
       · ${swing} swing · ${style}
+      · ${volleyLabel} volleys
       · grip L${gripIdx}
       · target weight <strong>${targetWeight.toFixed(1)} oz</strong>
       · budget &le; ${budget === 999 ? "no limit" : "$"+budget}
+      ${notes.extraTags.length ? `<br><span style="font-size:0.82rem">📝 ${notes.extraTags.join(" · ")}</span>` : ""}
     </div>`;
 
   const cards = top.map((m, i) => {
