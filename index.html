@@ -717,7 +717,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="9"/><path d="M3 12 q 9 -9 18 0"/><path d="M3 12 q 9 9 18 0"/>
       </svg>
-      Find My Setup
+      Find My Racket + String
     </button>
   </div>
 
@@ -1360,6 +1360,9 @@ function recommend() {
   // Attach the why-text to each pick so the email can use it
   top.forEach(m => { m.why = whyRacket(m, whyCtx); });
 
+  // Personality label (computed BEFORE _lastResults so the email payload can reference it)
+  const persona = personalityLabel({ style, levelIdx: playerLevelIdx, swingIdx: playerSwingIdx, arm, volley });
+
   // Stash ctx for the email button
   window._lastResults = {
     top,
@@ -1386,8 +1389,6 @@ function recommend() {
       </button>
     </div>`;
 
-  // Personality label
-  const persona = personalityLabel({ style, levelIdx: playerLevelIdx, swingIdx: playerSwingIdx, arm, volley });
   const personaBlock = `
     <div class="persona">
       <div class="persona-eyebrow">Your player profile</div>
