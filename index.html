@@ -238,13 +238,16 @@
     margin: 0.4rem 0 0.6rem;
   }
   .pick-img {
-    flex: 0 0 70px;
+    flex: 0 0 88px;
     background: linear-gradient(180deg, #f7faf3, #eaf5e9);
     border-radius: 12px;
-    padding: 0.4rem;
+    padding: 0.35rem;
     border: 1px solid #d4dcd6;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
   }
-  .pick-img .racket-svg { display: block; width: 100%; height: auto; max-height: 110px; }
+  .pick-img img { display: block; width: 100%; height: auto; max-height: 130px; object-fit: contain; }
+  .pick-img .racket-svg { display: block; width: 100%; height: auto; max-height: 130px; }
   .pick-meta { flex: 1; min-width: 0; }
   .pick .price-line {
     font-weight: 800; color: var(--court-dark); font-size: 1.05rem; margin-top: 0.15rem;
@@ -296,7 +299,8 @@
     .hero { padding: 2rem 1rem 3.5rem; }
     .pick { padding: 0.95rem 1rem; }
     .pick-head { gap: 0.7rem; }
-    .pick-img { flex: 0 0 56px; }
+    .pick-img { flex: 0 0 70px; }
+    .pick-img img, .pick-img .racket-svg { max-height: 100px; }
     .pick h3 { font-size: 1.05rem; }
     .match-score { width: 46px; height: 46px; font-size: 1.05rem; top: 10px; right: 10px; }
     .specs { font-size: 0.78rem; gap: 0.3rem 0.65rem; }
@@ -797,7 +801,8 @@
 </section>
 
 <footer>
-  Built from <a href="https://github.com/kedarsnd-ai/racket-recommender">tennis_equipment_database.xlsx</a> · prices are approximate MSRP
+  Built from <a href="https://github.com/kedarsnd-ai/racket-recommender">tennis_equipment_database.xlsx</a> · prices are approximate MSRP<br>
+  Product photos courtesy of <a href="https://www.tennis-warehouse.com" target="_blank" rel="noopener">Tennis Warehouse</a>. Buy links go to TW product pages where available.
 </footer>
 
 <script>
@@ -968,8 +973,9 @@ function recommendedTension(string, racket, player) {
   return Math.round(t);
 }
 
-// Google Shopping lands directly on the actual product across merchants
-function buyURL(brand, model) {
+// Buy URL: prefer the direct Tennis Warehouse product page; fall back to Google Shopping
+function buyURL(brand, model, racketID) {
+  if (racketID && TW_PAGE[racketID]) return TW_PAGE[racketID];
   const q = encodeURIComponent((brand + " " + model + " tennis racquet").replace(/[()]/g," ").replace(/\s+/g," ").trim());
   return `https://www.google.com/search?tbm=shop&q=${q}`;
 }
@@ -1003,6 +1009,18 @@ function parseNotes(text) {
     if (has(b)) { adj.brandPref = b; adj.extraTags.push(`notes: prefer ${b}`); }
   });
   return adj;
+}
+
+// Tennis Warehouse image codes — actual product photos served from img.tennis-warehouse.com.
+// 45/46 mapped; R028 (MXG 5, discontinued) falls through to the SVG illustration.
+const TW_IMG = {"R001":"WRFPR","R002":"WPS97C","R003":"WPS97L","R004":"WB9810","R005":"WB9818","R006":"WB104V","R007":"WU1005","R008":"CL103V","R009":"CL1P3V","R010":"BRNSV5","R011":"BPD25R","R012":"BPDP25","R013":"PD98R","R014":"BPAR26","R015":"BPA98R","R016":"BPAPLR","R017":"PS9816","R018":"PS9818","R019":"PS1020","R020":"HSPDM","R021":"HSPDP","R022":"HSPDTM","R023":"HPRMP","R024":"PRPROR","R025":"HMPR","R026":"HREM24","R027":"HINMP","R029":"EZ98BB","R030":"EZ10BB","R031":"EZ1LBB","R032":"VC988G","R033":"VC108G","R034":"PERM97","R035":"PERM1D","R036":"ATR310","R037":"PHNX2","R038":"PHNP1","R039":"TF300S","R040":"TF315S","R041":"TF285S","R042":"TFFI30","R043":"DCX2S","R044":"DCX2T8","R045":"DSX3R","R046":"DF500"};
+
+// Direct TW product page URLs — same coverage as TW_IMG
+const TW_PAGE = {"R001":"https://www.tennis-warehouse.com/Wilson_RF_01_Pro/descpageRCWILSON-WRFPR.html","R002":"https://www.tennis-warehouse.com/Wilson_Pro_Staff_97_Classic_Racquet/descpageRCWILSON-WPS97C.html","R003":"https://www.tennis-warehouse.com/Wilson_Pro_Staff_97L_Classic/descpageRCWILSON-WPS97L.html","R004":"https://www.tennis-warehouse.com/Wilson_Blade_98_16x19_v10/descpageRCWILSON-WB9810.html","R005":"https://www.tennis-warehouse.com/Wilson_Blade_98_18x20_v10/descpageRCWILSON-WB9818.html","R006":"https://www.tennis-warehouse.com/Wilson_Blade_104_v10/descpageRCWILSON-WB104V.html","R007":"https://www.tennis-warehouse.com/Wilson_Ultra_100_v5/descpageRCWILSON-WU1005.html","R008":"https://www.tennis-warehouse.com/Wilson_Clash_100_v3/descpageRCWILSON-CL103V.html","R009":"https://www.tennis-warehouse.com/Wilson_Clash_100_Pro_v3/descpageRCWILSON-CL1P3V.html","R010":"https://www.tennis-warehouse.com/Wilson_Burn_100S_v5/descpageRCWILSON-BRNSV5.html","R011":"https://www.tennis-warehouse.com/Babolat_Pure_Drive_2025/descpageRCBAB-BPD25R.html","R012":"https://www.tennis-warehouse.com/Babolat_Pure_Drive_Plus_2025/descpageRCBAB-BPDP25.html","R013":"https://www.tennis-warehouse.com/Babolat_Pure_Drive_98_2025/descpageRCBAB-PD98R.html","R014":"https://www.tennis-warehouse.com/Babolat_Pure_Aero_2026/descpageRCBAB-BPAR26.html","R015":"https://www.tennis-warehouse.com/Babolat_Pure_Aero_98_2026/descpageRCBAB-BPA98R.html","R016":"https://www.tennis-warehouse.com/Babolat_Pure_Aero_Plus_2026/descpageRCBAB-BPAPLR.html","R017":"https://www.tennis-warehouse.com/Babolat_Pure_Strike_98_16x19_Carbon_Grey/descpageRCBAB-PS9816.html","R018":"https://www.tennis-warehouse.com/Babolat_Pure_Strike_98_18x20_Carbon_Grey/descpageRCBAB-PS9818.html","R019":"https://www.tennis-warehouse.com/Babolat_Pure_Strike_100_16x20_Carbon_Grey/descpageRCBAB-PS1020.html","R020":"https://www.tennis-warehouse.com/Head_Speed_MP_2024/descpageRCHEAD-HSPDM.html","R021":"https://www.tennis-warehouse.com/Head_Speed_Pro/descpageRCHEAD-HSPDP.html","R022":"https://www.tennis-warehouse.com/Head_Speed_Team/descpageRCHEAD-HSPDTM.html","R023":"https://www.tennis-warehouse.com/Head_Prestige_MP/descpageRCHEAD-HPRMP.html","R024":"https://www.tennis-warehouse.com/Head_Prestige_Pro/descpageRCHEAD-PRPROR.html","R025":"https://www.tennis-warehouse.com/Head_Radical_MP_2023/descpageRCHEAD-HMPR.html","R026":"https://www.tennis-warehouse.com/Head_Extreme_MP/descpageRCHEAD-HREM24.html","R027":"https://www.tennis-warehouse.com/Head_Instinct_MP_2025/descpageRCHEAD-HINMP.html","R029":"https://www.tennis-warehouse.com/Yonex_EZONE_98_2025/descpageRCYONEX-EZ98BB.html","R030":"https://www.tennis-warehouse.com/Yonex_EZONE_100_2025/descpageRCYONEX-EZ10BB.html","R031":"https://www.tennis-warehouse.com/Yonex_EZONE_100L_2025/descpageRCYONEX-EZ1LBB.html","R032":"https://www.tennis-warehouse.com/Yonex_VCORE_98_8th_Gen/descpageRCYONEX-VC988G.html","R033":"https://www.tennis-warehouse.com/Yonex_VCORE_100_8th_Gen/descpageRCYONEX-VC108G.html","R034":"https://www.tennis-warehouse.com/Yonex_Percept_97_Midnight_Navy/descpageRCYONEX-PERM97.html","R035":"https://www.tennis-warehouse.com/Yonex_Percept_100D_Midnight_Navy/descpageRCYONEX-PERM1D.html","R036":"https://www.tennis-warehouse.com/Prince_ATS_Textreme_Tour_100_310/descpageRCTWABG-ATR310.html","R037":"https://www.tennis-warehouse.com/Prince_Phantom_100X_18x20/descpageRCTWABG-PHNX2.html","R038":"https://www.tennis-warehouse.com/Prince_Phantom_100P/descpageRCPRINCE-PHNP1.html","R039":"https://www.tennis-warehouse.com/Tecnifibre_TFight_300S/descpageRCTFUSA-TF300S.html","R040":"https://www.tennis-warehouse.com/Tecnifibre_TFight_315S/descpageRCTFUSA-TF315S.html","R041":"https://www.tennis-warehouse.com/Tecnifibre_TFight_285/descpageRCTFUSA-TF285S.html","R042":"https://www.tennis-warehouse.com/Tecnifibre_Fire_300/descpageRCTFUSA-TFFI30.html","R043":"https://www.tennis-warehouse.com/Dunlop_CX_200/descpageRCDUNLOP-DCX2S.html","R044":"https://www.tennis-warehouse.com/Dunlop_CX_200_Tour_18x20/descpageRCDUNLOP-DCX2T8.html","R045":"https://www.tennis-warehouse.com/Dunlop_SX_300/descpageRCDUNLOP-DSX3R.html","R046":"https://www.tennis-warehouse.com/Dunlop_FX_500/descpageRCDUNLOP-DF500.html"};
+
+function racketImageURL(rid) {
+  const code = TW_IMG[rid];
+  return code ? `https://img.tennis-warehouse.com/watermark/rs.php?path=${code}-thumb.jpg` : null;
 }
 
 // Brand color palette (used to tint the SVG racket illustration)
@@ -1232,10 +1250,10 @@ function buildEmailMailto(email, ctx, top) {
     if (m.tags.length) lines.push(`  Tags: ${m.tags.join(", ")}`);
     if (s) {
       lines.push(`  String: ${s.Brand} ${s.Model} (${s.String_Type}) — ${s.Gauge_Name} gauge at ${m.tension} lb`);
-      lines.push(`  Buy racket: ${buyURL(r.Brand, r.Model)}`);
+      lines.push(`  Buy racket: ${buyURL(r.Brand, r.Model, r.Racket_ID)}`);
       lines.push(`  Buy string: ${buyStringURL(s.Brand, s.Model)}`);
     } else {
-      lines.push(`  Buy racket: ${buyURL(r.Brand, r.Model)}`);
+      lines.push(`  Buy racket: ${buyURL(r.Brand, r.Model, r.Racket_ID)}`);
     }
   });
 
@@ -1449,7 +1467,13 @@ function recommend() {
       <span class="rank">${i === 0 ? "★ TOP COMBO" : "#" + (i+1)}</span>
       <div class="match-score" title="Match score">${m.matchScore}<span>/100</span></div>
       <div class="pick-head">
-        <div class="pick-img">${racketSVG(r.Brand)}</div>
+        <div class="pick-img">${(() => {
+          const photo = racketImageURL(r.Racket_ID);
+          const fallback = racketSVG(r.Brand).replace(/"/g, "&quot;");
+          return photo
+            ? `<img src="${photo}" alt="${r.Brand} ${r.Model}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML=this.dataset.fallback" data-fallback="${fallback}">`
+            : racketSVG(r.Brand);
+        })()}</div>
         <div class="pick-meta">
           <div class="brand">${r.Brand}</div>
           <h3>${r.Model} <span class="yr">(${r.Year})</span></h3>
@@ -1471,7 +1495,7 @@ function recommend() {
       </div>
       <div class="tags">${m.tags.map(t => `<span class="tag${t.startsWith("⚠") ? " warn" : ""}">${t}</span>`).join("")}</div>
       ${stringBlock}
-      <a class="buy-btn primary" href="${buyURL(r.Brand, r.Model)}" target="_blank" rel="noopener">
+      <a class="buy-btn primary" href="${buyURL(r.Brand, r.Model, r.Racket_ID)}" target="_blank" rel="noopener">
         Buy this racket
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17 17 7"/><path d="M8 7 h9 v9"/></svg>
       </a>
