@@ -1,0 +1,223 @@
+{
+  "iconicCombos": [
+    {
+      "who": "Federer's setup",
+      "pair": "Pro Staff RF97 Autograph + Wilson Natural Gut / Luxilon ALU Power",
+      "why": "Heavy player's frame, gut mains for feel, poly crosses for control. Classic touch-game hybrid."
+    },
+    {
+      "who": "Nadal's setup",
+      "pair": "Pure Aero + Babolat RPM Blast",
+      "why": "Heavy topspin frame matched with the spin-king poly. Built for monster lasso forehands."
+    },
+    {
+      "who": "Djokovic-style",
+      "pair": "Speed Pro 2024 + Babolat VS Touch / Head Hawk hybrid",
+      "why": "Control frame, gut mains for arm + dwell time, poly crosses for bite and durability."
+    },
+    {
+      "who": "Sinner / Alcaraz",
+      "pair": "Pure Aero + Babolat RPM Blast",
+      "why": "Modern pro topspin standard — explosive frame plus the most-used pro string on tour."
+    },
+    {
+      "who": "Comfort player",
+      "pair": "Wilson Clash 100 + Wilson NXT",
+      "why": "The gentlest combo: flexible frame + soft multifilament. Great for tennis elbow."
+    },
+    {
+      "who": "Spin baseliner",
+      "pair": "Yonex VCORE 98 + Solinco Hyper-G",
+      "why": "Spin-shaped frame + control-poly with great snapback. Spin and shape on every ball."
+    },
+    {
+      "who": "Control + feel",
+      "pair": "Wilson Blade 98 + Luxilon ALU Power",
+      "why": "The most popular tour combo — predictable response, refined feel, plenty of plow-through."
+    },
+    {
+      "who": "Flat-ball striker",
+      "pair": "Babolat Pure Strike (18x20) + Solinco Hyper-G",
+      "why": "Tighter pattern + control-poly = ropey flat drives. Great for redirection and depth."
+    }
+  ],
+  "twImg": {
+    "R001": "WRFPR",
+    "R002": "WPS97C",
+    "R003": "WPS97L",
+    "R004": "WB9810",
+    "R005": "WB9818",
+    "R006": "WB104V",
+    "R007": "WU1005",
+    "R008": "CL103V",
+    "R009": "CL1P3V",
+    "R010": "BRNSV5",
+    "R011": "BPD25R",
+    "R012": "BPDP25",
+    "R013": "PD98R",
+    "R014": "BPAR26",
+    "R015": "BPA98R",
+    "R016": "BPAPLR",
+    "R017": "PS9816",
+    "R018": "PS9818",
+    "R019": "PS1020",
+    "R020": "HSPDM",
+    "R021": "HSPDP",
+    "R022": "HSPDTM",
+    "R023": "HPRMP",
+    "R024": "PRPROR",
+    "R025": "HMPR",
+    "R026": "HREM24",
+    "R027": "HINMP",
+    "R029": "EZ98BB",
+    "R030": "EZ10BB",
+    "R031": "EZ1LBB",
+    "R032": "VC988G",
+    "R033": "VC108G",
+    "R034": "PERM97",
+    "R035": "PERM1D",
+    "R036": "ATR310",
+    "R037": "PHNX2",
+    "R038": "PHNP1",
+    "R039": "TF300S",
+    "R040": "TF315S",
+    "R041": "TF285S",
+    "R042": "TFFI30",
+    "R043": "DCX2S",
+    "R044": "DCX2T8",
+    "R045": "DSX3R",
+    "R046": "DF500"
+  },
+  "twPage": {
+    "R001": "https://www.tennis-warehouse.com/Wilson_RF_01_Pro/descpageRCWILSON-WRFPR.html",
+    "R002": "https://www.tennis-warehouse.com/Wilson_Pro_Staff_97_Classic_Racquet/descpageRCWILSON-WPS97C.html",
+    "R003": "https://www.tennis-warehouse.com/Wilson_Pro_Staff_97L_Classic/descpageRCWILSON-WPS97L.html",
+    "R004": "https://www.tennis-warehouse.com/Wilson_Blade_98_16x19_v10/descpageRCWILSON-WB9810.html",
+    "R005": "https://www.tennis-warehouse.com/Wilson_Blade_98_18x20_v10/descpageRCWILSON-WB9818.html",
+    "R006": "https://www.tennis-warehouse.com/Wilson_Blade_104_v10/descpageRCWILSON-WB104V.html",
+    "R007": "https://www.tennis-warehouse.com/Wilson_Ultra_100_v5/descpageRCWILSON-WU1005.html",
+    "R008": "https://www.tennis-warehouse.com/Wilson_Clash_100_v3/descpageRCWILSON-CL103V.html",
+    "R009": "https://www.tennis-warehouse.com/Wilson_Clash_100_Pro_v3/descpageRCWILSON-CL1P3V.html",
+    "R010": "https://www.tennis-warehouse.com/Wilson_Burn_100S_v5/descpageRCWILSON-BRNSV5.html",
+    "R011": "https://www.tennis-warehouse.com/Babolat_Pure_Drive_2025/descpageRCBAB-BPD25R.html",
+    "R012": "https://www.tennis-warehouse.com/Babolat_Pure_Drive_Plus_2025/descpageRCBAB-BPDP25.html",
+    "R013": "https://www.tennis-warehouse.com/Babolat_Pure_Drive_98_2025/descpageRCBAB-PD98R.html",
+    "R014": "https://www.tennis-warehouse.com/Babolat_Pure_Aero_2026/descpageRCBAB-BPAR26.html",
+    "R015": "https://www.tennis-warehouse.com/Babolat_Pure_Aero_98_2026/descpageRCBAB-BPA98R.html",
+    "R016": "https://www.tennis-warehouse.com/Babolat_Pure_Aero_Plus_2026/descpageRCBAB-BPAPLR.html",
+    "R017": "https://www.tennis-warehouse.com/Babolat_Pure_Strike_98_16x19_Carbon_Grey/descpageRCBAB-PS9816.html",
+    "R018": "https://www.tennis-warehouse.com/Babolat_Pure_Strike_98_18x20_Carbon_Grey/descpageRCBAB-PS9818.html",
+    "R019": "https://www.tennis-warehouse.com/Babolat_Pure_Strike_100_16x20_Carbon_Grey/descpageRCBAB-PS1020.html",
+    "R020": "https://www.tennis-warehouse.com/Head_Speed_MP_2024/descpageRCHEAD-HSPDM.html",
+    "R021": "https://www.tennis-warehouse.com/Head_Speed_Pro/descpageRCHEAD-HSPDP.html",
+    "R022": "https://www.tennis-warehouse.com/Head_Speed_Team/descpageRCHEAD-HSPDTM.html",
+    "R023": "https://www.tennis-warehouse.com/Head_Prestige_MP/descpageRCHEAD-HPRMP.html",
+    "R024": "https://www.tennis-warehouse.com/Head_Prestige_Pro/descpageRCHEAD-PRPROR.html",
+    "R025": "https://www.tennis-warehouse.com/Head_Radical_MP_2023/descpageRCHEAD-HMPR.html",
+    "R026": "https://www.tennis-warehouse.com/Head_Extreme_MP/descpageRCHEAD-HREM24.html",
+    "R027": "https://www.tennis-warehouse.com/Head_Instinct_MP_2025/descpageRCHEAD-HINMP.html",
+    "R029": "https://www.tennis-warehouse.com/Yonex_EZONE_98_2025/descpageRCYONEX-EZ98BB.html",
+    "R030": "https://www.tennis-warehouse.com/Yonex_EZONE_100_2025/descpageRCYONEX-EZ10BB.html",
+    "R031": "https://www.tennis-warehouse.com/Yonex_EZONE_100L_2025/descpageRCYONEX-EZ1LBB.html",
+    "R032": "https://www.tennis-warehouse.com/Yonex_VCORE_98_8th_Gen/descpageRCYONEX-VC988G.html",
+    "R033": "https://www.tennis-warehouse.com/Yonex_VCORE_100_8th_Gen/descpageRCYONEX-VC108G.html",
+    "R034": "https://www.tennis-warehouse.com/Yonex_Percept_97_Midnight_Navy/descpageRCYONEX-PERM97.html",
+    "R035": "https://www.tennis-warehouse.com/Yonex_Percept_100D_Midnight_Navy/descpageRCYONEX-PERM1D.html",
+    "R036": "https://www.tennis-warehouse.com/Prince_ATS_Textreme_Tour_100_310/descpageRCTWABG-ATR310.html",
+    "R037": "https://www.tennis-warehouse.com/Prince_Phantom_100X_18x20/descpageRCTWABG-PHNX2.html",
+    "R038": "https://www.tennis-warehouse.com/Prince_Phantom_100P/descpageRCPRINCE-PHNP1.html",
+    "R039": "https://www.tennis-warehouse.com/Tecnifibre_TFight_300S/descpageRCTFUSA-TF300S.html",
+    "R040": "https://www.tennis-warehouse.com/Tecnifibre_TFight_315S/descpageRCTFUSA-TF315S.html",
+    "R041": "https://www.tennis-warehouse.com/Tecnifibre_TFight_285/descpageRCTFUSA-TF285S.html",
+    "R042": "https://www.tennis-warehouse.com/Tecnifibre_Fire_300/descpageRCTFUSA-TFFI30.html",
+    "R043": "https://www.tennis-warehouse.com/Dunlop_CX_200/descpageRCDUNLOP-DCX2S.html",
+    "R044": "https://www.tennis-warehouse.com/Dunlop_CX_200_Tour_18x20/descpageRCDUNLOP-DCX2T8.html",
+    "R045": "https://www.tennis-warehouse.com/Dunlop_SX_300/descpageRCDUNLOP-DSX3R.html",
+    "R046": "https://www.tennis-warehouse.com/Dunlop_FX_500/descpageRCDUNLOP-DF500.html"
+  },
+  "racketBlurbs": {
+    "R001": "Federer's signature blade — 12.5 oz of heavy, head-light precision with a thin beam that lets you feel every contact.",
+    "R002": "The standard Pro Staff 97 — same refined Pro Staff DNA as the RF, slightly easier to swing all day.",
+    "R003": "The Pro Staff in lighter trim — Pro Staff feel without needing tour-level swing speed; surprisingly arm-friendly.",
+    "R004": "The most-played frame on the ATP tour — clean pocketing, an open pattern that grabs the ball, and that famous Blade flex.",
+    "R005": "Same Blade chassis with a tighter 18×20 pattern — flatter trajectory, more first-strike control, less spin off the layup.",
+    "R006": "The big-head Blade — 104 sq in and only 10.7 oz, with the same buttery RA 62 flex but a forgiving sweet spot.",
+    "R007": "Easy power baseliner frame — head-heavy bias and stiff layup that punches above its weight on serves and groundies.",
+    "R008": "The most flexible frame in the lineup at RA 55 — bends in your hand. Best-in-class arm comfort, period.",
+    "R009": "The heavier Clash — keeps the signature flex but adds plow-through for advancing players. Comfort plus stability.",
+    "R010": "The 18×16 spin pattern — fewer mains, more snapback, gnarly RPMs. Built for the modern aggressive baseliner.",
+    "R011": "The all-time bestseller — RA 72, free power across the stringbed, alive on contact. The default for a generation.",
+    "R012": "Pure Drive in extended length (27.5″) — bigger leverage on serves and groundstrokes for tall players.",
+    "R013": "Tighter, more advanced Pure Drive — keeps the trampoline feel but rewards better technique with more control.",
+    "R014": "Nadal's frame — the modern spin standard. Beefy 26mm beam and an open 16×19 that produces topspin from contact.",
+    "R015": "The smaller, more refined Aero — Pure Aero spin in a frame that punches through the court, head-light and sharp.",
+    "R016": "Extended Pure Aero (27.5″) — bigger leverage on the serve while keeping that signature spin-friendly response.",
+    "R017": "Control-spin hybrid — less powerful than a Pure Drive, more spin-friendly than a Blade. Lives in a uniquely useful middle.",
+    "R018": "The tightly-strung 18×20 Pure Strike — built for precision flat-ball strikers; plows through when you commit to the shot.",
+    "R019": "The throwback player's frame — modern construction, classic geometry, 10-point head-light. For the all-courter who values feel.",
+    "R020": "Djokovic's family in MP trim — lightning-quick through the air and the most balanced frame Head makes.",
+    "R021": "Closest available to Djokovic's actual setup — 12 oz, head-light, 18×20 pattern. Tour-level control and stability.",
+    "R022": "The lightweight Speed — faster swings, bigger sweet spot, easier shoulder load. Speed at its friendliest.",
+    "R023": "The most flexible player's frame in the DB — RA 61, 95 head, old-school feel from modern materials.",
+    "R024": "The most demanding frame here — 12.4 oz, 11-point head-light, RA 60. Reserved for pros who hit with full strokes.",
+    "R025": "The all-court Head — sits between the faster Speed and the heavier Prestige. Solid pick for advancing intermediates.",
+    "R026": "Head's spin frame — 26mm beam, RA 68, open pattern. Stiff feel, big spin and power for aggressive baseliners.",
+    "R027": "Easy power for steady players — sits in the Pure Drive zone; gives free pace without demanding fast technique.",
+    "R028": "Bridge frame — Head's MXG fusion tech feels both stiff and damped. Niche but distinct.",
+    "R029": "Yonex's most-played control-tweener — buttery feel and the isometric head shape that adds a real sweet-spot bump.",
+    "R030": "The 100-head EZONE — friendly access to spin and power. Yonex's answer to the Pure Drive / Speed MP space.",
+    "R031": "Lighter EZONE 98 — same control character with less mass. Junior-friendly and great for senior players who want EZONE feel.",
+    "R032": "Yonex's spin frame — open pattern, RA 66, snappier than a Pure Aero in a smaller head. For aggressive shape-makers.",
+    "R033": "VCORE in 100 trim — slightly easier to use than the 98, blending spin and power for spin-curious intermediates.",
+    "R034": "Replaced the VCORE Pro — RA 59, the most flexible Yonex player's frame. For advanced all-courters who chase feel.",
+    "R035": "Percept 100 — flexible all-court 100, sits between an EZONE (tweener) and VCORE (control). Versatile and arm-friendly.",
+    "R036": "Tweener with a mid-tier price tag — solid pickup for intermediates without paying flagship money.",
+    "R037": "Old-school Phantom — flexible RA 60 with an 18×20 pattern. Cult favorite among advanced flat-ball strikers.",
+    "R038": "Phantom in 16×18 — slight spin upgrade over the 100X with the same flexible RA 60 chassis.",
+    "R039": "Spanish-made player's frame — tour-grade feel at a more accessible weight; sneaky-good value.",
+    "R040": "The popular TFight — control-bias 11.6 oz frame. Medvedev-style precision feel without the price tag.",
+    "R041": "Lighter TFight — 10.9 oz, easy to swing, refined feel. Friendly intermediate option.",
+    "R042": "Tweener Tecnifibre — RA 66, more lively, power-leaning. For improving players who want some help.",
+    "R043": "Dunlop's main control frame — plays a lot like a Blade with a different feel character, at a friendlier price.",
+    "R044": "Control-tour CX — 12 oz, 18×20 pattern. For advanced players who want flat depth and predictable feedback.",
+    "R045": "Dunlop's spin frame — 27mm beam, RA 68, generous power. Aggressive-baseliner-friendly.",
+    "R046": "Dunlop's tweener — easier swing, free power. Modern beginner-friendly frame."
+  },
+  "brandColors": {
+    "Wilson": {
+      "frame": "#c41e3a",
+      "grip": "#1a1a1a",
+      "accent": "#fff"
+    },
+    "Babolat": {
+      "frame": "#1a1a1a",
+      "grip": "#f7e017",
+      "accent": "#f7e017"
+    },
+    "Head": {
+      "frame": "#1a1a1a",
+      "grip": "#c41e3a",
+      "accent": "#c41e3a"
+    },
+    "Yonex": {
+      "frame": "#003d7a",
+      "grip": "#1a1a1a",
+      "accent": "#fff"
+    },
+    "Prince": {
+      "frame": "#1e90c4",
+      "grip": "#1a1a1a",
+      "accent": "#fff"
+    },
+    "Tecnifibre": {
+      "frame": "#1a3a6c",
+      "grip": "#f47b20",
+      "accent": "#f47b20"
+    },
+    "Dunlop": {
+      "frame": "#f7e017",
+      "grip": "#1a1a1a",
+      "accent": "#1a1a1a"
+    }
+  }
+}
