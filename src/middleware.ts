@@ -2,12 +2,18 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  // Skip auth if Supabase isn't configured yet
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.next({ request });
+  }
+
+  try {
+    let supabaseResponse = NextResponse.next({ request });
+
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -22,30 +28,32 @@ export async function middleware(request: NextRequest) {
           );
         }
       }
+    });
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    const { pathname } = request.nextUrl;
+    const isPublic = pathname === '/login' || pathname.startsWith('/auth/');
+
+    if (!user && !isPublic) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
     }
-  );
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+    if (user && pathname === '/login') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
 
-  const { pathname } = request.nextUrl;
-  const isPublic =
-    pathname === '/login' || pathname.startsWith('/auth/');
-
-  if (!user && !isPublic) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+    return supabaseResponse;
+  } catch {
+    // If anything goes wrong, let the request through rather than crashing
+    return NextResponse.next({ request });
   }
-
-  if (user && pathname === '/login') {
-    const url = request.nextUrl.clone();
-    url.pathname = '/';
-    return NextResponse.redirect(url);
-  }
-
-  return supabaseResponse;
 }
 
 export const config = {
