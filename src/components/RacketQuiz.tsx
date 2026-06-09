@@ -8,6 +8,7 @@ import type {
 import { buildRecommendationMailto } from '@/lib/mailto';
 import { buildShareUrlFromForm, copyShareLink } from '@/lib/share-link';
 import { RecommendationResults } from './RecommendationResults';
+import { saveQuizResult } from '@/lib/supabase/saveQuizResult';
 
 const COUNTER_URL = 'https://abacus.jasoncameron.dev';
 const COUNTER_NS = 'racket-iq';
@@ -120,6 +121,7 @@ export function RacketQuiz() {
         }
 
         setResult(data);
+        void saveQuizResult(payload, data);
         requestAnimationFrame(() => {
           resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
@@ -191,6 +193,7 @@ export function RacketQuiz() {
       }
 
       setResult(data);
+      void saveQuizResult(payload, data);
 
       requestAnimationFrame(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
