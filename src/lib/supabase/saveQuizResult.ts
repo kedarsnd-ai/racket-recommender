@@ -8,12 +8,11 @@ export async function saveQuizResult(
   try {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
 
     const picks = result.picks.slice(0, 3);
 
     await supabase.from('quiz_results').insert({
-      user_id: user.id,
+      user_id: user?.id ?? null,
       height_in: Number(payload.heightIn) || null,
       weight_lb: Number(payload.weightLb) || null,
       grip_idx: Number(payload.gripIdx) || null,
